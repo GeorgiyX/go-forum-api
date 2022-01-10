@@ -1,5 +1,9 @@
-#ide
+#development
 .idea
+.env
 
 #artifacts
 api.run
+app/models/*_easyjson.go
+
+
