@@ -22,3 +22,4 @@ COPY --from=build /api.run /api.run
 EXPOSE 8080
 
 CMD ["/api.run"]
+VOLUME ["/vol"]
