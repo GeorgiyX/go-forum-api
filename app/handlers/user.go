@@ -6,6 +6,7 @@ import (
 	"go-forum-api/app/models"
 	"go-forum-api/app/usecases"
 	"go-forum-api/utils/errors"
+	"net/http"
 )
 
 type UserHandler struct {
@@ -21,13 +22,19 @@ func CreateUserHandler(url string,
 
 	urlGroup := router.Group(url)
 	urlGroup.GET("/:nickname/profile", handler.Get)
-	urlGroup.GET("/:nickname/create", handler.Create)
+	urlGroup.POST("/:nickname/create", handler.Create)
 
 	return handler
 }
 
 func (handler *UserHandler) Get(c *gin.Context) {
-
+	nickname := c.Param("nickname")
+	model, err := handler.UserUseCase.Get(&nickname)
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err.(errors.IAPIErrors).ToMessage())
+		return
+	}
+	c.JSON(http.StatusOK, model)
 }
 
 func (handler *UserHandler) Create(c *gin.Context) {
@@ -35,9 +42,15 @@ func (handler *UserHandler) Create(c *gin.Context) {
 	model.NickName = c.Param("nickname")
 	err := easyjson.UnmarshalFromReader(c.Request.Body, model)
 	if err != nil {
-		message := &models.Message{
-			Message: errors.ErrBadRequest.Error(),
-		}
-		c.
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.ToMessage())
+		return
 	}
+
+	err = handler.UserUseCase.Create(model)
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err.(errors.IAPIErrors).ToMessage())
+		return
+	}
+
+	c.JSON(http.StatusOK, model)
 }

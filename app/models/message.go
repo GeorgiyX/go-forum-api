@@ -1,5 +1,5 @@
 package models
 
 type Message struct {
-	Message string `json:"message"`
+	MessageText string `json:"message"`
 }

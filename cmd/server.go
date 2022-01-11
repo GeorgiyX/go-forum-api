@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"go-forum-api/app/handlers"
 	"go-forum-api/app/repositories"
+	repoImpl "go-forum-api/app/repositories/impl"
 	"go-forum-api/app/usecases"
+	ucImpl "go-forum-api/app/usecases/impl"
 )
 
 type Repositories struct {
@@ -16,11 +21,11 @@ type UseCases struct {
 }
 
 type Handlers struct {
-	User handlers.UserHandler
+	User *handlers.UserHandler
 }
 
 type Server struct {
-	Settings     Settings
+	Settings     *Settings
 	Repositories Repositories
 	UseCases     UseCases
 	Handlers     Handlers
@@ -28,25 +33,49 @@ type Server struct {
 
 func CreateServer() *Server {
 	server := &Server{
-		Settings:     Settings{},
+		Settings:     LoadSettings(),
 		Repositories: Repositories{},
 		UseCases:     UseCases{},
 		Handlers:     Handlers{},
 	}
+	return server
 }
 
 func (server *Server) Run() {
+	/* DataBase */
+	//TODO: подкрутить конфиг
+	config, err := pgxpool.ParseConfig(server.Settings.DSN)
+	if err != nil {
+		fmt.Printf("Can't parese DSN: %v\n", err)
+		return
+	}
 
-	// Creates a router without any middleware by default
+	db, err := pgxpool.ConnectConfig(context.Background(), config)
+	if err != nil {
+		fmt.Printf("Can't create DB connection pool: %v", err)
+		return
+	}
+
+	/* Repositories & UseCases*/
+	server.Repositories.User = repoImpl.CreateUserRepository(db)
+	server.UseCases.User = ucImpl.CreateUserUseCase(server.Repositories.User)
+
+	/* Server */
+	gin.SetMode(server.Settings.MODE)
 	router := gin.New()
-
-	// Global middleware
-	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
-	// By default gin.DefaultWriter = os.Stdout
-	router.Use(gin.Logger())
-
-	// Recovery middleware recovers from any panics and writes a 500 if there was one.
+	if server.Settings.MODE == "debug" {
+		router.Use(gin.Logger())
+	}
 	router.Use(gin.Recovery())
 	apiGroup := router.Group(server.Settings.Urls.Root)
+
+	/*Handlers*/
+	server.Handlers.User = handlers.CreateUserHandler(server.Settings.Urls.User, server.UseCases.User, apiGroup)
+
+	err = router.Run(server.Settings.APIAddr)
+	if err != nil {
+		fmt.Printf("Can't start server: %v\n", err)
+		return
+	}
 
 }
