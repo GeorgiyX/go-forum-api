@@ -35,7 +35,7 @@ func (usecase *UserUseCase) All() (users *[]models.User, err error) {
 
 func (usecase *UserUseCase) Create(user *models.User) (err error) {
 	err = usecase.userRepository.Create(user)
-	// todo выяснить как получить детали об ошикбке для 409
+
 	if err != nil {
 		pgconErr, ok := err.(*pgconn.PgError)
 		if ok && pgconErr.SQLState() == errors.SQL23505 {

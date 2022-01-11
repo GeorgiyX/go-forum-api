@@ -3,7 +3,8 @@
 .env
 
 #artifacts
-api.run
+*.run
 app/models/*_easyjson.go
+build
 
 

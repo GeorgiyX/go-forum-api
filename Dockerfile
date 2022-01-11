@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Build stage
-FROM golang:1.17-alpine AS build
+FROM golang:1.17 AS build
 
 WORKDIR /app
 
@@ -14,38 +14,41 @@ ENV PATH=$GOPATH/bin:$PATH
 
 COPY . .
 RUN easyjson -all -pkg app/models #TODO: go generate
-RUN go build -o /api.run cmd/main.go
+RUN go build -o api.run ./cmd/.
 
 # Deploy stage
-FROM alpine
+FROM ubuntu
 
-ENV PG_VERSION 12
+ENV PGVERSION 12
 
 RUN apt -y update && \
-    apt install -y postgresql-$PG_VERSION
+    echo "tzdata "Geographic area" select 8" | debconf-set-selections && \
+    apt install -y tzdata && apt install -y postgresql-$PGVERSION
 
-ENV PG_DEFAULT_USER postgres
-ENV PG_FORUM_USER forum_user
-ENV PG_PASSWORD forum_user_password
-ENV PG_DB_NAME forum
-ENV PG_PORT 5432
+ENV PGDEFAULT_USER postgres
+ENV PGFORUM_USER forum_user
+ENV PGPASSWORD forum_user_password
+ENV PGDB_NAME forum
+ENV PGPORT 5432
 ENV API_PORT 5000
 
-# Мб проблемы с sudo c systemctl
-USER $PG_DEFAULT_USER
+USER $PGDEFAULT_USER
 
-RUN systemctl start postgresql && \
-    psql --command "CREATE USER $PG_FORUM_USER WITH SUPERUSER PASSWORD '$PG_PASSWORD';" && \
-    createdb --owner=$PG_FORUM_USER $PG_DB_NAME && \
-    systemctl stop postgresql
+RUN /etc/init.d/postgresql start && \
+    psql --command "CREATE USER $PGFORUM_USER WITH SUPERUSER PASSWORD '$PGPASSWORD';" && \
+    createdb --owner=$PGFORUM_USER $PGDB_NAME && \
+    /etc/init.d/postgresql stop
 
 ENV ARTIFACT api.run
-WORKDIR /
-COPY --from=build /$ARTIFACT /$ARTIFACT
 
+WORKDIR /app
+COPY --from=build /app/$ARTIFACT $ARTIFACT
+COPY ./db/db.sql db.sql
+
+ENV MODE debug
 #TODO: docker-compose
 CMD service postgresql start && \
-    psql -h localhost -p $PG_PORT -d $PG_DB_NAME -U $PG_FORUM_USER -q -f ./db/db.sql \
+    psql -h localhost -p $PGPORT -d $PGDB_NAME -U $PGFORUM_USER -w -q -f db.sql \
     && ./$ARTIFACT
 
 VOLUME ["/var/lib/postgresql/data"]

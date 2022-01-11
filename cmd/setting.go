@@ -40,7 +40,7 @@ func LoadSettings() *Settings {
 
 	settings.DSN = fmt.Sprintf("host=%s port=%v user=%s password=%s dbname=%s sslmode=disable",
 		settings.DBHost, settings.DBPort, settings.DBUser, settings.DBPassword, settings.DBName)
-	settings.APIAddr = fmt.Sprintf("localhost:%v", settings.APIPort)
+	settings.APIAddr = fmt.Sprintf("0.0.0.0:%v", settings.APIPort)
 
 	fmt.Printf("Server settings: %+v\n", settings)
 	return &settings
