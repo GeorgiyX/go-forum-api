@@ -1,10 +1,12 @@
 package impl
 
 import (
-	"fmt"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	"go-forum-api/app/models"
 	"go-forum-api/app/repositories"
 	"go-forum-api/app/usecases"
+	"go-forum-api/utils/errors"
 )
 
 type UserUseCase struct {
@@ -17,14 +19,12 @@ func CreateUserUseCase(userRepository repositories.IUserRepository) usecases.IUs
 
 func (usecase *UserUseCase) Get(nickname *string) (user *models.User, err error) {
 	user, err = usecase.userRepository.Get(nickname)
-	// todo выяснить как получить детали об ошикбке для 409
 	if err != nil {
-		switch err {
-		case :
-			
-		
+		if err == pgx.ErrNoRows {
+			err = errors.ErrUserNotFound
+		} else {
+			err = errors.ErrInternalServer
 		}
-		fmt.Printf("Ошибка при get user: %T [%+v]", err, err)
 	}
 	return
 }
@@ -37,8 +37,12 @@ func (usecase *UserUseCase) Create(user *models.User) (err error) {
 	err = usecase.userRepository.Create(user)
 	// todo выяснить как получить детали об ошикбке для 409
 	if err != nil {
-		fmt.Printf("Ошибка при create user: %T [%+v]", err, err)
-		return err
+		pgconErr, ok := err.(*pgconn.PgError)
+		if ok && pgconErr.SQLState() == errors.SQL23505 {
+			err = errors.ErrUserCreate
+		} else {
+			err = errors.ErrInternalServer
+		}
 	}
 	return
 }

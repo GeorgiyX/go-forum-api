@@ -29,7 +29,13 @@ func (apiError *APIErrors) Code() int {
 }
 
 var (
-	ErrUserNotFound IAPIErrors = &APIErrors{ErrCode: http.StatusNotFound, Description: "не найден юзер"}
-	ErrUserUpdate   IAPIErrors = &APIErrors{ErrCode: http.StatusConflict, Description: "новые данные профиля пользователя конфликтуют с имеющимися пользователями"}
-	ErrBadRequest   IAPIErrors = &APIErrors{ErrCode: http.StatusBadRequest, Description: "bad request"}
+	ErrUserNotFound   IAPIErrors = &APIErrors{ErrCode: http.StatusNotFound, Description: "не найден юзер"}
+	ErrUserUpdate     IAPIErrors = &APIErrors{ErrCode: http.StatusConflict, Description: "новые данные профиля пользователя конфликтуют с имеющимися пользователями"}
+	ErrUserCreate     IAPIErrors = &APIErrors{ErrCode: http.StatusConflict, Description: "пользователь уже существует"}
+	ErrBadRequest     IAPIErrors = &APIErrors{ErrCode: http.StatusBadRequest, Description: "bad request"}
+	ErrInternalServer IAPIErrors = &APIErrors{ErrCode: http.StatusInternalServerError, Description: "internal server error"}
+)
+
+var (
+	SQL23505 = "23505"
 )
