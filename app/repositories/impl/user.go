@@ -38,3 +38,24 @@ func (repo *UserRepository) Update(user *models.User) (err error) {
 	_, err = repo.db.Exec(context.Background(), query, user.FullName, user.About, user.Email, user.NickName)
 	return
 }
+
+func (repo *UserRepository) GetUsersByUserNicknameOrEmail(user *models.User) (err error, users []*models.User) {
+	query := "SELECT nickname, fullname, about, email FROM users WHERE nickname = $1 OR email = $2"
+	rows, err := repo.db.Query(context.Background(), query, user.NickName, user.Email)
+	defer rows.Close()
+
+	if err != nil {
+		return
+	}
+
+	for rows.Next() {
+		conflictUser := &models.User{}
+		err = rows.Scan(&conflictUser.NickName, &conflictUser.FullName, &conflictUser.About, &conflictUser.Email)
+		if err != nil {
+			return
+		}
+		users = append(users, conflictUser)
+	}
+
+	return
+}

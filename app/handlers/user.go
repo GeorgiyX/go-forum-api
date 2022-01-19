@@ -47,29 +47,20 @@ func (handler *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	err = handler.UserUseCase.Create(model)
+	err, users := handler.UserUseCase.Create(model)
+	if users != nil {
+		c.JSON(http.StatusConflict, users)
+		return
+	}
+
 	if err != nil {
 		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err.(errors.IAPIErrors).ToMessage())
 		return
 	}
 
-	c.JSON(http.StatusOK, model)
+	c.JSON(http.StatusCreated, model)
 }
 
 func (handler *UserHandler) Update(c *gin.Context) {
-	model := &models.User{}
-	model.NickName = c.Param("nickname")
-	err := easyjson.UnmarshalFromReader(c.Request.Body, model)
-	if err != nil {
-		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.ToMessage())
-		return
-	}
 
-	err = handler.UserUseCase.Create(model)
-	if err != nil {
-		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err.(errors.IAPIErrors).ToMessage())
-		return
-	}
-
-	c.JSON(http.StatusOK, model)
 }

@@ -9,4 +9,5 @@ type IUserRepository interface {
 	All() (users *[]models.User, err error)
 	Create(user *models.User) (err error)
 	Update(user *models.User) (err error)
+	GetUsersByUserNicknameOrEmail(user *models.User) (err error, users []*models.User)
 }

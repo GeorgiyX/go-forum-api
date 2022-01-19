@@ -33,15 +33,20 @@ func (usecase *UserUseCase) All() (users *[]models.User, err error) {
 	return
 }
 
-func (usecase *UserUseCase) Create(user *models.User) (err error) {
+func (usecase *UserUseCase) Create(user *models.User) (err error, users []*models.User) {
 	err = usecase.userRepository.Create(user)
 
 	if err != nil {
 		pgconErr, ok := err.(*pgconn.PgError)
 		if ok && pgconErr.SQLState() == errors.SQL23505 {
-			err = errors.ErrUserCreate
+			err, users = usecase.userRepository.GetUsersByUserNicknameOrEmail(user)
+			if err != nil {
+				err = errors.ErrInternalServer
+				return
+			}
 		} else {
 			err = errors.ErrInternalServer
+			return
 		}
 	}
 	return

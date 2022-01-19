@@ -12,7 +12,7 @@ type Urls struct {
 
 type Settings struct {
 	MODE       string `env:"MODE" envDefault:"debug"`
-	APIPort    uint   `env:"PG_DEFAULT_USER" envDefault:"8080"`
+	APIPort    uint   `env:"API_PORT" envDefault:"8080"`
 	DBHost     string `env:"PG_HOST" envDefault:"localhost"`
 	DBPort     uint   `env:"PG_PORT" envDefault:"5432"`
 	DBName     string `env:"PG_DB_NAME" envDefault:"forum"`

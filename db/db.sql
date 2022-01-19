@@ -50,7 +50,8 @@ CREATE UNLOGGED TABLE posts
     thread   INT REFERENCES threads (id) ON UPDATE CASCADE ON DELETE CASCADE        NOT NULL,
     created  TIMESTAMP WITH TIME ZONE DEFAULT NOW()                                 NOT NULL,
     isEdited BOOLEAN                  DEFAULT false                                 NOT NULL,
-    message  TEXT                                                                   NOT NULL
+    message  TEXT                                                                   NOT NULL,
+    path     BIGINT[]                                                               NOT NULL
 );
 
 CREATE UNLOGGED TABLE IF NOT EXISTS forum_users
