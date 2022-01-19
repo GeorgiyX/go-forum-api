@@ -34,5 +34,7 @@ func (repo *UserRepository) Create(user *models.User) (err error) {
 }
 
 func (repo *UserRepository) Update(user *models.User) (err error) {
+	query := "UPDATE users SET fullname = $1, about = $2, email = $3 WHERE nickname = $4"
+	_, err = repo.db.Exec(context.Background(), query, user.FullName, user.About, user.Email, user.NickName)
 	return
 }

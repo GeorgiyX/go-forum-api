@@ -22,6 +22,7 @@ func CreateUserHandler(url string,
 
 	urlGroup := router.Group(url)
 	urlGroup.GET("/:nickname/profile", handler.Get)
+	urlGroup.POST("/:nickname/profile", handler.Update)
 	urlGroup.POST("/:nickname/create", handler.Create)
 
 	return handler
@@ -38,6 +39,24 @@ func (handler *UserHandler) Get(c *gin.Context) {
 }
 
 func (handler *UserHandler) Create(c *gin.Context) {
+	model := &models.User{}
+	model.NickName = c.Param("nickname")
+	err := easyjson.UnmarshalFromReader(c.Request.Body, model)
+	if err != nil {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.ToMessage())
+		return
+	}
+
+	err = handler.UserUseCase.Create(model)
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err.(errors.IAPIErrors).ToMessage())
+		return
+	}
+
+	c.JSON(http.StatusOK, model)
+}
+
+func (handler *UserHandler) Update(c *gin.Context) {
 	model := &models.User{}
 	model.NickName = c.Param("nickname")
 	err := easyjson.UnmarshalFromReader(c.Request.Body, model)

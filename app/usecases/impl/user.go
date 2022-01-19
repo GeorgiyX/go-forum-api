@@ -48,5 +48,15 @@ func (usecase *UserUseCase) Create(user *models.User) (err error) {
 }
 
 func (usecase *UserUseCase) Update(user *models.User) (err error) {
+	err = usecase.userRepository.Update(user)
+
+	if err != nil {
+		pgconErr, ok := err.(*pgconn.PgError)
+		if ok && pgconErr.SQLState() == errors.SQL23505 {
+			err = errors.ErrUserUpdate
+		} else {
+			err = errors.ErrInternalServer
+		}
+	}
 	return
 }
