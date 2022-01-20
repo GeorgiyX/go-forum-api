@@ -34,7 +34,9 @@ func (repo *UserRepository) Create(user *models.User) (err error) {
 }
 
 func (repo *UserRepository) Update(user *models.User) (updatedUser *models.User, err error) {
-	query := "UPDATE users SET fullname = $1, about = $2, email = $3 WHERE nickname = $4 " +
+	query := "UPDATE users SET fullname = COALESCE(NULLIF($1, ''), fullname), " +
+		"about = COALESCE(NULLIF($2, ''), about), " +
+		"email = COALESCE(NULLIF($3, ''), email) WHERE nickname = $4 " +
 		"RETURNING nickname, fullname, about, email"
 
 	row := repo.db.QueryRow(context.Background(), query, user.FullName, user.About, user.Email, user.NickName)

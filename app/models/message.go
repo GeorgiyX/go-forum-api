@@ -3,7 +3,7 @@ package models
 type Message struct {
 	ErrCode     int    `json:"-"`
 	Description string `json:"message"`
-	Details     string `json:"message_details"`
+	Details     string `json:"message_details,omitempty"`
 }
 
 func (msg *Message) Error() string {

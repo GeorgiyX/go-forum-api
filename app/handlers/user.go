@@ -43,7 +43,7 @@ func (handler *UserHandler) Create(c *gin.Context) {
 	model.NickName = c.Param("nickname")
 	err := easyjson.UnmarshalFromReader(c.Request.Body, model)
 	if err != nil {
-		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.SetDetails(c.FullPath()))
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest)
 		return
 	}
 

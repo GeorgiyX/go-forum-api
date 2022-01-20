@@ -5,8 +5,8 @@ type Forum struct {
 	Slug    string `json:"slug"`
 	Title   string `json:"title"`
 	User    string `json:"user"`
-	Posts   int    `json:"posts,omitempty"`
-	Threads int    `json:"threads,omitempty"`
+	Posts   int    `json:"posts"`
+	Threads int    `json:"threads"`
 }
 
 type ForumGetUsersQueryParams struct {

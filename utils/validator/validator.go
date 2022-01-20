@@ -18,7 +18,7 @@ func GetInstance() (*Validator, error) {
 	if validatorInstance == nil {
 		validatorInstanceLock.Lock()
 		defer validatorInstanceLock.Unlock()
-		if validatorInstance != nil {
+		if validatorInstance == nil {
 			var err error
 			validatorInstance, err = createValidator()
 			if err != nil {
