@@ -37,3 +37,11 @@ func (repo *ForumRepository) Get(slug string) (forum *models.Forum, err error) {
 func (repo *ForumRepository) GetUsers(slug string, params *models.ForumGetUsersQueryParams) (users []*models.User, err error) {
 	return
 }
+
+func (repo *ForumRepository) CreateThread(thread *models.Thread) (createdThread *models.Thread, err error) {
+	return
+}
+
+func (repo *ForumRepository) GetThreads(slug string) (threads []*models.Thread, err error) {
+	return
+}

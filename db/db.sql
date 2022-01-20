@@ -1,8 +1,10 @@
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
-CREATE EXTENSION IF NOT EXISTS CITEXT;
+CREATE
+EXTENSION IF NOT EXISTS CITEXT;
 
-CREATE UNLOGGED TABLE users
+CREATE
+UNLOGGED TABLE users
 (
     nickname CITEXT UNIQUE PRIMARY KEY NOT NULL,
     email    CITEXT UNIQUE             NOT NULL,
@@ -10,7 +12,8 @@ CREATE UNLOGGED TABLE users
     about    TEXT                      NOT NULL
 );
 
-CREATE UNLOGGED TABLE forums
+CREATE
+UNLOGGED TABLE forums
 (
     slug    CITEXT UNIQUE PRIMARY KEY                                              NOT NULL,
     title   TEXT                                                                   NOT NULL,
@@ -19,19 +22,21 @@ CREATE UNLOGGED TABLE forums
     threads INT DEFAULT 0
 );
 
-CREATE UNLOGGED TABLE threads
+CREATE
+UNLOGGED TABLE threads
 (
     id      SERIAL UNIQUE PRIMARY KEY                                              NOT NULL,
     slug    CITEXT UNIQUE                                                          NOT NULL,
     author  CITEXT REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     forum   CITEXT REFERENCES forums (slug) ON UPDATE CASCADE ON DELETE CASCADE    NOT NULL,
     title   TEXT                                                                   NOT NULL,
-    message TEXT,
+    message TEXT                                                                   NOT NULL,
     created TIMESTAMP WITH TIME ZONE DEFAULT NOW()                                 NOT NULL,
     votes   INT                      DEFAULT 0
 );
 
-CREATE UNLOGGED TABLE votes
+CREATE
+UNLOGGED TABLE votes
 (
     nickname CITEXT REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     thread   INT REFERENCES threads (id) ON UPDATE CASCADE ON DELETE CASCADE        NOT NULL,
@@ -41,7 +46,8 @@ CREATE UNLOGGED TABLE votes
     UNIQUE (thread, nickname)
 );
 
-CREATE UNLOGGED TABLE posts
+CREATE
+UNLOGGED TABLE posts
 (
     id       SERIAL UNIQUE PRIMARY KEY                                              NOT NULL,
     parent   INT                      DEFAULT NULL,
@@ -54,7 +60,8 @@ CREATE UNLOGGED TABLE posts
     path     BIGINT[]                                                               NOT NULL
 );
 
-CREATE UNLOGGED TABLE IF NOT EXISTS forum_users
+CREATE
+UNLOGGED TABLE IF NOT EXISTS forum_users
 (
     forum    CITEXT REFERENCES forums (slug) ON UPDATE CASCADE ON DELETE CASCADE    NOT NULL,
     nickname CITEXT REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,

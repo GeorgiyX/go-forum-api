@@ -14,18 +14,21 @@ import (
 )
 
 type Repositories struct {
-	User  repositories.IUserRepository
-	Forum repositories.IForumRepository
+	User   repositories.IUserRepository
+	Forum  repositories.IForumRepository
+	Thread repositories.IThreadRepository
 }
 
 type UseCases struct {
-	User  usecases.IUserUseCase
-	Forum usecases.IForumUseCase
+	User   usecases.IUserUseCase
+	Forum  usecases.IForumUseCase
+	Thread usecases.IThreadUseCase
 }
 
 type Handlers struct {
-	User  *handlers.UserHandler
-	Forum *handlers.ForumHandler
+	User   *handlers.UserHandler
+	Forum  *handlers.ForumHandler
+	Thread *handlers.ThreadHandler
 }
 
 type Server struct {
@@ -68,8 +71,12 @@ func (server *Server) Run() {
 	/* Repositories & UseCases*/
 	server.Repositories.User = repoImpl.CreateUserRepository(db)
 	server.UseCases.User = ucImpl.CreateUserUseCase(server.Repositories.User)
+
+	server.Repositories.Thread = repoImpl.CreateThreadRepository(db)
+	server.UseCases.Thread = ucImpl.CreateThreadUseCase(server.Repositories.Thread)
+
 	server.Repositories.Forum = repoImpl.CreateForumRepository(db)
-	server.UseCases.Forum = ucImpl.CreateForumUseCase(server.Repositories.Forum)
+	server.UseCases.Forum = ucImpl.CreateForumUseCase(server.Repositories.Forum, server.Repositories.Thread)
 
 	/* Server */
 	gin.SetMode(server.Settings.MODE)

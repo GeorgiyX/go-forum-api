@@ -28,9 +28,10 @@ type Settings struct {
 
 func GetUrls() Urls {
 	return Urls{
-		Root:  "/api",
-		User:  "/user",
-		Forum: "/forum",
+		Root:   "/api",
+		User:   "/user",
+		Forum:  "/forum",
+		Thread: "/thread",
 	}
 }
 

@@ -12,6 +12,11 @@ type IAPIErrors interface {
 }
 
 var (
+	ErrBadRequest     IAPIErrors = &models.Message{ErrCode: http.StatusBadRequest, Description: "bad request"}
+	ErrInternalServer IAPIErrors = &models.Message{ErrCode: http.StatusInternalServerError, Description: "internal server error"}
+)
+
+var (
 	ErrUserNotFound       IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "не найден юзер"}
 	ErrUserUpdateNotFound IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "не найден пользователь для обновления"}
 	ErrUserUpdateConflict IAPIErrors = &models.Message{ErrCode: http.StatusConflict, Description: "новые данные профиля пользователя конфликтуют с имеющимися пользователями"}
@@ -25,8 +30,8 @@ var (
 )
 
 var (
-	ErrBadRequest     IAPIErrors = &models.Message{ErrCode: http.StatusBadRequest, Description: "bad request"}
-	ErrInternalServer IAPIErrors = &models.Message{ErrCode: http.StatusInternalServerError, Description: "internal server error"}
+	ErrThreadAlreadyExists       IAPIErrors = &models.Message{ErrCode: http.StatusConflict, Description: "тред уже присутсвует в базе данных"}
+	ErrThreadUserOrForumNotFound IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "автор треда или форуи не найдены"}
 )
 
 var (

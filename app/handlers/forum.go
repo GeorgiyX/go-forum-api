@@ -26,6 +26,8 @@ func CreateForumHandler(url string,
 	urlGroup.GET("/:slug/details", handler.Get)
 	urlGroup.POST("/create", handler.Create)
 	urlGroup.POST("/:slug/users", handler.GetUsers)
+	urlGroup.GET("/:slug/threads", handler.GetThreads)
+	urlGroup.GET("/:slug/create", handler.CreateThread)
 
 	return handler
 }
@@ -90,4 +92,49 @@ func (handler *ForumHandler) GetUsers(c *gin.Context) {
 	}
 
 	fmt.Printf("params: %v", params)
+}
+
+func (handler *ForumHandler) CreateThread(c *gin.Context) {
+	thread := &models.Thread{}
+
+	thread.Forum = c.Param("slug")
+	if v, _ := validator.GetInstance(); !v.ValidateSlug(thread.Forum) {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.SetDetails("Не корректный slug forum"))
+		return
+	}
+
+	var ok bool
+	thread.Slug, ok = c.GetQuery("slug")
+	if !ok {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.SetDetails("Не передан slug thread"))
+		return
+	}
+
+	if v, _ := validator.GetInstance(); !v.ValidateSlug(thread.Slug) {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.SetDetails("Не корректный slug thread"))
+		return
+	}
+
+	err := easyjson.UnmarshalFromReader(c.Request.Body, thread)
+	if err != nil {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest)
+		return
+	}
+
+	createThread, err := handler.ForumUseCase.CreateThread(thread)
+	if err != nil {
+		if err.(errors.IAPIErrors).Code() == errors.ErrForumAlreadyExists.Code() {
+			c.JSON(errors.ErrThreadAlreadyExists.Code(), createThread)
+			return
+		}
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, createThread)
+	return
+}
+
+func (handler *ForumHandler) GetThreads(c *gin.Context) {
+	return
 }
