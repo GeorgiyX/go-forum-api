@@ -16,7 +16,7 @@ func CreateThreadRepository(db *pgxpool.Pool) repositories.IThreadRepository {
 }
 
 func (repo *ThreadRepository) GetBySlug(slug string) (thread *models.Thread, err error) {
-	query := "SELECT id, slug, author, forum, title, message, created, votes FROM thread WHERE slug = $1"
+	query := "SELECT id, slug, author, forum, title, message, created, votes FROM threads WHERE slug = $1"
 	row := repo.db.QueryRow(context.Background(), query, slug)
 
 	thread = &models.Thread{}
@@ -25,7 +25,7 @@ func (repo *ThreadRepository) GetBySlug(slug string) (thread *models.Thread, err
 	return
 }
 func (repo *ThreadRepository) GetByID(id int) (thread *models.Thread, err error) {
-	query := "SELECT id, slug, author, forum, title, message, created, votes FROM thread WHERE id = $1"
+	query := "SELECT id, slug, author, forum, title, message, created, votes FROM threads WHERE id = $1"
 	row := repo.db.QueryRow(context.Background(), query, id)
 
 	thread = &models.Thread{}
@@ -34,7 +34,7 @@ func (repo *ThreadRepository) GetByID(id int) (thread *models.Thread, err error)
 	return
 }
 func (repo *ThreadRepository) UpdateBySlug(thread *models.Thread) (updatedThread *models.Thread, err error) {
-	query := "UPDATE thread SET title = COALESCE(NULLIF($1, ''), title), " +
+	query := "UPDATE threads SET title = COALESCE(NULLIF($1, ''), title), " +
 		"message = COALESCE(NULLIF($2, ''), message) WHERE slug = $3 " +
 		"RETURNING id, slug, author, forum, title, message, created, votes"
 
@@ -45,7 +45,7 @@ func (repo *ThreadRepository) UpdateBySlug(thread *models.Thread) (updatedThread
 	return
 }
 func (repo *ThreadRepository) UpdateByID(thread *models.Thread) (updatedThread *models.Thread, err error) {
-	query := "UPDATE thread SET title = COALESCE(NULLIF($1, ''), title), " +
+	query := "UPDATE threads SET title = COALESCE(NULLIF($1, ''), title), " +
 		"message = COALESCE(NULLIF($2, ''), message) WHERE id = $3 " +
 		"RETURNING id, slug, author, forum, title, message, created, votes"
 

@@ -116,7 +116,7 @@ func (handler *ForumHandler) CreateThread(c *gin.Context) {
 
 	createdThread, err := handler.ForumUseCase.CreateThread(thread)
 	if err != nil {
-		if err.(errors.IAPIErrors).Code() == errors.ErrForumAlreadyExists.Code() {
+		if err.(errors.IAPIErrors).Code() == errors.ErrThreadAlreadyExists.Code() {
 			c.JSON(errors.ErrThreadAlreadyExists.Code(), createdThread)
 			return
 		}

@@ -1,9 +1,12 @@
 package impl
 
 import (
+	"github.com/jackc/pgx/v4"
 	"go-forum-api/app/models"
 	"go-forum-api/app/repositories"
 	"go-forum-api/app/usecases"
+	"go-forum-api/utils/errors"
+	"go-forum-api/utils/validator"
 )
 
 type ThreadUseCase struct {
@@ -14,15 +17,55 @@ func CreateThreadUseCase(threadRepository repositories.IThreadRepository) usecas
 	return &ThreadUseCase{threadRepository: threadRepository}
 }
 
-func (usecase *ThreadUseCase) GetBySlug(slug string) (thread *models.Thread, err error) {
+func (usecase *ThreadUseCase) Get(slugOrId string) (thread *models.Thread, err error) {
+	v, _ := validator.GetInstance()
+	slug, id, err := v.GetSlugOrIdOrErr(slugOrId)
+	if err != nil {
+		err = errors.ErrBadRequest.SetDetails(err.Error())
+		return
+	}
+
+	if slug == "" {
+		thread, err = usecase.threadRepository.GetByID(id)
+	} else {
+		thread, err = usecase.threadRepository.GetBySlug(slug)
+	}
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			err = errors.ErrThreadNotFound
+		} else {
+			err = errors.ErrInternalServer
+		}
+	}
+
 	return
 }
-func (usecase *ThreadUseCase) GetByID(id int) (thread *models.Thread, err error) {
-	return
-}
-func (usecase *ThreadUseCase) UpdateBySlug(thread *models.Thread) (updatedThread *models.Thread, err error) {
-	return
-}
-func (usecase *ThreadUseCase) UpdateByID(thread *models.Thread) (updatedThread *models.Thread, err error) {
+
+func (usecase *ThreadUseCase) Update(slugOrId string, thread *models.Thread) (updatedThread *models.Thread, err error) {
+	v, _ := validator.GetInstance()
+	slug, id, err := v.GetSlugOrIdOrErr(slugOrId)
+	if err != nil {
+		err = errors.ErrBadRequest.SetDetails(err.Error())
+		return
+	}
+
+	if slug == "" {
+		thread.ID = id
+		updatedThread, err = usecase.threadRepository.UpdateByID(thread)
+	} else {
+		thread.Slug = slug
+		updatedThread, err = usecase.threadRepository.UpdateBySlug(thread)
+	}
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			err = errors.ErrThreadUpdateNotFound
+			return
+		}
+		err = errors.ErrInternalServer
+		return
+	}
+
 	return
 }

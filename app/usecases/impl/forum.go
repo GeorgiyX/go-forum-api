@@ -54,7 +54,6 @@ func (usecase *ForumUseCase) Get(slug string) (forum *models.Forum, err error) {
 	forum, err = usecase.forumRepository.Get(slug)
 
 	if err != nil {
-
 		if err == pgx.ErrNoRows {
 			err = errors.ErrForumNotFound
 		} else {

@@ -1,7 +1,6 @@
 package impl
 
 import (
-	"fmt"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"go-forum-api/app/models"
@@ -59,7 +58,6 @@ func (usecase *UserUseCase) Update(user *models.User) (updatedUser *models.User,
 	updatedUser, err = usecase.userRepository.Update(user)
 
 	if err != nil {
-		fmt.Printf("Ошибка Update: %v", err)
 		if err == pgx.ErrNoRows {
 			err = errors.ErrUserUpdateNotFound
 			return

@@ -1,8 +1,10 @@
 package validator
 
 import (
+	"fmt"
 	"go-forum-api/app/models"
 	"regexp"
+	"strconv"
 	"sync"
 )
 
@@ -47,4 +49,25 @@ func (validator *Validator) ValidateForumQuery(query *models.ForumQueryParams) {
 	if query.Limit == 0 {
 		query.Limit = 100
 	}
+}
+
+func (validator *Validator) GetSlugOrIdOrErr(slugOrId string) (slug string, id int, err error) {
+	if slugOrId == "" {
+		err = fmt.Errorf("пустой slug or id")
+		return
+	}
+
+	id, err = strconv.Atoi(slugOrId)
+	if err == nil {
+		return
+	}
+
+	if validator.ValidateSlug(slugOrId) == false {
+		err = fmt.Errorf("неверный slug or id")
+		return
+	}
+
+	err = nil
+	slug = slugOrId
+	return
 }

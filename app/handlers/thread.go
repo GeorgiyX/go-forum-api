@@ -2,7 +2,11 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/mailru/easyjson"
+	"go-forum-api/app/models"
 	"go-forum-api/app/usecases"
+	"go-forum-api/utils/errors"
+	"net/http"
 )
 
 type ThreadHandler struct {
@@ -24,9 +28,34 @@ func CreateThreadHandler(url string,
 }
 
 func (handler *ThreadHandler) Get(c *gin.Context) {
+	slugOrId := c.Param("slug_or_id")
+
+	forum, err := handler.ThreadUseCase.Get(slugOrId)
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
+		return
+	}
+
+	c.JSON(http.StatusOK, forum)
 	return
 }
 
 func (handler *ThreadHandler) Update(c *gin.Context) {
+	slugOrId := c.Param("slug_or_id")
+
+	thread := &models.Thread{}
+	err := easyjson.UnmarshalFromReader(c.Request.Body, thread)
+	if err != nil {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest)
+		return
+	}
+
+	forum, err := handler.ThreadUseCase.Update(slugOrId, thread)
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
+		return
+	}
+
+	c.JSON(http.StatusOK, forum)
 	return
 }

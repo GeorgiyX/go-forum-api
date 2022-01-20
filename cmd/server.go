@@ -90,6 +90,7 @@ func (server *Server) Run() {
 	/*Handlers*/
 	server.Handlers.User = handlers.CreateUserHandler(server.Settings.Urls.User, server.UseCases.User, apiGroup)
 	server.Handlers.Forum = handlers.CreateForumHandler(server.Settings.Urls.Forum, server.UseCases.Forum, apiGroup)
+	server.Handlers.Thread = handlers.CreateThreadHandler(server.Settings.Urls.Thread, server.UseCases.Thread, apiGroup)
 
 	err = router.Run(server.Settings.APIAddr)
 	if err != nil {
