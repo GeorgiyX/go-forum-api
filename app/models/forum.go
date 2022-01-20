@@ -1,7 +1,9 @@
 package models
 
+import "time"
+
 type Forum struct {
-	ID      int    `json:"-"`
+	ID      int    `json:"id"`
 	Slug    string `json:"slug"`
 	Title   string `json:"title"`
 	User    string `json:"user"`
@@ -9,8 +11,8 @@ type Forum struct {
 	Threads int    `json:"threads"`
 }
 
-type ForumGetUsersQueryParams struct {
-	Limit int    `form:"limit"`
-	Since string `form:"since"`
-	Desc  bool   `form:"desc"`
+type ForumQueryParams struct {
+	Limit int       `form:"limit"`
+	Since time.Time `form:"since"`
+	Desc  bool      `form:"desc"`
 }

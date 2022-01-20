@@ -15,6 +15,7 @@ UNLOGGED TABLE users
 CREATE
 UNLOGGED TABLE forums
 (
+    id      SERIAL UNIQUE                                                          NOT NULL,
     slug    CITEXT UNIQUE PRIMARY KEY                                              NOT NULL,
     title   TEXT                                                                   NOT NULL,
     "user"  CITEXT REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
@@ -26,7 +27,7 @@ CREATE
 UNLOGGED TABLE threads
 (
     id      SERIAL UNIQUE PRIMARY KEY                                              NOT NULL,
-    slug    CITEXT UNIQUE                                                          NOT NULL,
+    slug    CITEXT UNIQUE,
     author  CITEXT REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     forum   CITEXT REFERENCES forums (slug) ON UPDATE CASCADE ON DELETE CASCADE    NOT NULL,
     title   TEXT                                                                   NOT NULL,

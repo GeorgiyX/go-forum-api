@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"go-forum-api/app/models"
 	"regexp"
 	"sync"
 )
@@ -40,4 +41,10 @@ func createValidator() (validator *Validator, err error) {
 
 func (validator *Validator) ValidateSlug(slug string) bool {
 	return validator.slugRegExCompiled.MatchString(slug)
+}
+
+func (validator *Validator) ValidateForumQuery(query *models.ForumQueryParams) {
+	if query.Limit == 0 {
+		query.Limit = 100
+	}
 }

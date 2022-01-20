@@ -54,6 +54,7 @@ func (repo *UserRepository) GetUsersByUserNicknameOrEmail(user *models.User) (us
 		return
 	}
 
+	users = make([]*models.User, 0)
 	for rows.Next() {
 		conflictUser := &models.User{}
 		err = rows.Scan(&conflictUser.NickName, &conflictUser.FullName, &conflictUser.About, &conflictUser.Email)
