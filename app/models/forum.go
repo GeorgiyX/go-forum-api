@@ -11,6 +11,6 @@ type Forum struct {
 
 type ForumGetUsersQueryParams struct {
 	Limit int    `form:"limit"`
-	Since string `query:"since"`
-	Desc  bool   `query:"desc"`
+	Since string `form:"since"`
+	Desc  bool   `form:"desc"`
 }

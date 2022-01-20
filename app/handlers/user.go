@@ -32,7 +32,7 @@ func (handler *UserHandler) Get(c *gin.Context) {
 	nickname := c.Param("nickname")
 	model, err := handler.UserUseCase.Get(&nickname)
 	if err != nil {
-		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err.(errors.IAPIErrors).ToMessage())
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
 		return
 	}
 	c.JSON(http.StatusOK, model)
@@ -43,7 +43,7 @@ func (handler *UserHandler) Create(c *gin.Context) {
 	model.NickName = c.Param("nickname")
 	err := easyjson.UnmarshalFromReader(c.Request.Body, model)
 	if err != nil {
-		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.ToMessage())
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.SetDetails(c.FullPath()))
 		return
 	}
 
@@ -54,7 +54,7 @@ func (handler *UserHandler) Create(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err.(errors.IAPIErrors).ToMessage())
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
 		return
 	}
 
@@ -66,14 +66,14 @@ func (handler *UserHandler) Update(c *gin.Context) {
 	model.NickName = c.Param("nickname")
 	err := easyjson.UnmarshalFromReader(c.Request.Body, model)
 	if err != nil {
-		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.ToMessage())
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest)
 		return
 	}
 
 	user, err := handler.UserUseCase.Update(model)
 
 	if err != nil {
-		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err.(errors.IAPIErrors).ToMessage())
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
 		return
 	}
 
