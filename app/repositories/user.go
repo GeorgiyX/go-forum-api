@@ -1,8 +1,6 @@
 package repositories
 
-import (
-	"go-forum-api/app/models"
-)
+import "go-forum-api/app/models"
 
 type IUserRepository interface {
 	Get(nickname *string) (user *models.User, err error)

@@ -10,18 +10,22 @@ import (
 	repoImpl "go-forum-api/app/repositories/impl"
 	"go-forum-api/app/usecases"
 	ucImpl "go-forum-api/app/usecases/impl"
+	"go-forum-api/utils/validator"
 )
 
 type Repositories struct {
-	User repositories.IUserRepository
+	User  repositories.IUserRepository
+	Forum repositories.IForumRepository
 }
 
 type UseCases struct {
-	User usecases.IUserUseCase
+	User  usecases.IUserUseCase
+	Forum usecases.IForumUseCase
 }
 
 type Handlers struct {
-	User *handlers.UserHandler
+	User  *handlers.UserHandler
+	Forum *handlers.ForumHandler
 }
 
 type Server struct {
@@ -37,6 +41,11 @@ func CreateServer() *Server {
 		Repositories: Repositories{},
 		UseCases:     UseCases{},
 		Handlers:     Handlers{},
+	}
+	_, err := validator.GetInstance()
+	if err != nil {
+		fmt.Printf("Can't create validator instance: %v", err)
+		return nil
 	}
 	return server
 }
@@ -59,6 +68,8 @@ func (server *Server) Run() {
 	/* Repositories & UseCases*/
 	server.Repositories.User = repoImpl.CreateUserRepository(db)
 	server.UseCases.User = ucImpl.CreateUserUseCase(server.Repositories.User)
+	server.Repositories.Forum = repoImpl.CreateForumRepository(db)
+	server.UseCases.Forum = ucImpl.CreateForumUseCase(server.Repositories.Forum)
 
 	/* Server */
 	gin.SetMode(server.Settings.MODE)
@@ -71,6 +82,7 @@ func (server *Server) Run() {
 
 	/*Handlers*/
 	server.Handlers.User = handlers.CreateUserHandler(server.Settings.Urls.User, server.UseCases.User, apiGroup)
+	server.Handlers.Forum = handlers.CreateForumHandler(server.Settings.Urls.Forum, server.UseCases.Forum, apiGroup)
 
 	err = router.Run(server.Settings.APIAddr)
 	if err != nil {
