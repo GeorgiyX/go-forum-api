@@ -29,11 +29,12 @@ func (apiError *APIErrors) Code() int {
 }
 
 var (
-	ErrUserNotFound   IAPIErrors = &APIErrors{ErrCode: http.StatusNotFound, Description: "не найден юзер"}
-	ErrUserUpdate     IAPIErrors = &APIErrors{ErrCode: http.StatusConflict, Description: "новые данные профиля пользователя конфликтуют с имеющимися пользователями"}
-	ErrUserCreate     IAPIErrors = &APIErrors{ErrCode: http.StatusConflict, Description: "пользователь c таким email или nickname уже существует"}
-	ErrBadRequest     IAPIErrors = &APIErrors{ErrCode: http.StatusBadRequest, Description: "bad request"}
-	ErrInternalServer IAPIErrors = &APIErrors{ErrCode: http.StatusInternalServerError, Description: "internal server error"}
+	ErrUserNotFound       IAPIErrors = &APIErrors{ErrCode: http.StatusNotFound, Description: "не найден юзер"}
+	ErrUserUpdateNotFound IAPIErrors = &APIErrors{ErrCode: http.StatusNotFound, Description: "не найден пользователь для обновления"}
+	ErrUserUpdateConflict IAPIErrors = &APIErrors{ErrCode: http.StatusConflict, Description: "новые данные профиля пользователя конфликтуют с имеющимися пользователями"}
+	ErrUserCreateConflict IAPIErrors = &APIErrors{ErrCode: http.StatusConflict, Description: "пользователь c таким email или nickname уже существует"}
+	ErrBadRequest         IAPIErrors = &APIErrors{ErrCode: http.StatusBadRequest, Description: "bad request"}
+	ErrInternalServer     IAPIErrors = &APIErrors{ErrCode: http.StatusInternalServerError, Description: "internal server error"}
 )
 
 var (

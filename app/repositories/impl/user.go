@@ -33,13 +33,17 @@ func (repo *UserRepository) Create(user *models.User) (err error) {
 	return
 }
 
-func (repo *UserRepository) Update(user *models.User) (err error) {
-	query := "UPDATE users SET fullname = $1, about = $2, email = $3 WHERE nickname = $4"
-	_, err = repo.db.Exec(context.Background(), query, user.FullName, user.About, user.Email, user.NickName)
+func (repo *UserRepository) Update(user *models.User) (updatedUser *models.User, err error) {
+	query := "UPDATE users SET fullname = $1, about = $2, email = $3 WHERE nickname = $4 " +
+		"RETURNING nickname, fullname, about, email"
+
+	row := repo.db.QueryRow(context.Background(), query, user.FullName, user.About, user.Email, user.NickName)
+	updatedUser = &models.User{}
+	err = row.Scan(&updatedUser.NickName, &updatedUser.FullName, &updatedUser.About, &updatedUser.Email)
 	return
 }
 
-func (repo *UserRepository) GetUsersByUserNicknameOrEmail(user *models.User) (err error, users []*models.User) {
+func (repo *UserRepository) GetUsersByUserNicknameOrEmail(user *models.User) (users []*models.User, err error) {
 	query := "SELECT nickname, fullname, about, email FROM users WHERE nickname = $1 OR email = $2"
 	rows, err := repo.db.Query(context.Background(), query, user.NickName, user.Email)
 	defer rows.Close()
@@ -52,6 +56,7 @@ func (repo *UserRepository) GetUsersByUserNicknameOrEmail(user *models.User) (er
 		conflictUser := &models.User{}
 		err = rows.Scan(&conflictUser.NickName, &conflictUser.FullName, &conflictUser.About, &conflictUser.Email)
 		if err != nil {
+			users = nil
 			return
 		}
 		users = append(users, conflictUser)

@@ -47,9 +47,9 @@ func (handler *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	err, users := handler.UserUseCase.Create(model)
+	users, err := handler.UserUseCase.Create(model)
 	if users != nil {
-		c.JSON(http.StatusConflict, users)
+		c.JSON(err.(errors.IAPIErrors).Code(), users)
 		return
 	}
 
@@ -62,5 +62,20 @@ func (handler *UserHandler) Create(c *gin.Context) {
 }
 
 func (handler *UserHandler) Update(c *gin.Context) {
+	model := &models.User{}
+	model.NickName = c.Param("nickname")
+	err := easyjson.UnmarshalFromReader(c.Request.Body, model)
+	if err != nil {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.ToMessage())
+		return
+	}
 
+	user, err := handler.UserUseCase.Update(model)
+
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err.(errors.IAPIErrors).ToMessage())
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }

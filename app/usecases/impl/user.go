@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"fmt"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"go-forum-api/app/models"
@@ -33,35 +34,44 @@ func (usecase *UserUseCase) All() (users *[]models.User, err error) {
 	return
 }
 
-func (usecase *UserUseCase) Create(user *models.User) (err error, users []*models.User) {
+func (usecase *UserUseCase) Create(user *models.User) (users []*models.User, err error) {
 	err = usecase.userRepository.Create(user)
 
 	if err != nil {
 		pgconErr, ok := err.(*pgconn.PgError)
 		if ok && pgconErr.SQLState() == errors.SQL23505 {
-			err, users = usecase.userRepository.GetUsersByUserNicknameOrEmail(user)
+			users, err = usecase.userRepository.GetUsersByUserNicknameOrEmail(user)
 			if err != nil {
 				err = errors.ErrInternalServer
 				return
 			}
-		} else {
-			err = errors.ErrInternalServer
+			err = errors.ErrUserCreateConflict
 			return
 		}
+		err = errors.ErrInternalServer
+		return
 	}
+
 	return
 }
 
-func (usecase *UserUseCase) Update(user *models.User) (err error) {
-	err = usecase.userRepository.Update(user)
+func (usecase *UserUseCase) Update(user *models.User) (updatedUser *models.User, err error) {
+	updatedUser, err = usecase.userRepository.Update(user)
 
 	if err != nil {
+		fmt.Printf("Ошибка Update: %v", err)
+		if err == pgx.ErrNoRows {
+			err = errors.ErrUserUpdateNotFound
+			return
+		}
 		pgconErr, ok := err.(*pgconn.PgError)
 		if ok && pgconErr.SQLState() == errors.SQL23505 {
-			err = errors.ErrUserUpdate
-		} else {
-			err = errors.ErrInternalServer
+			err = errors.ErrUserUpdateConflict
+			return
 		}
+		err = errors.ErrInternalServer
+		return
 	}
+
 	return
 }
