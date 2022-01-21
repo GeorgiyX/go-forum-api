@@ -116,3 +116,31 @@ func (usecase *ThreadUseCase) Vote(slugOrId string, vote *models.Vote) (thread *
 
 	return
 }
+
+func (usecase *ThreadUseCase) CreatePosts(slugOrId string, posts []*models.Post) (createdPosts []*models.Post, err error) {
+	thread, err := usecase.Get(slugOrId)
+	if err != nil {
+		return
+	}
+
+	createdPosts, err = usecase.threadRepository.CreatePosts(thread.ID, thread.Forum, posts)
+	if err != nil {
+		pgconErr, ok := err.(*pgconn.PgError)
+		if ok {
+			switch pgconErr.SQLState() {
+			case errors.SQL23503:
+				err = errors.ErrPostUserNotFound
+				return
+
+			case errors.P0001:
+				err = errors.ErrPostWrongParent
+				return
+
+			default:
+				err = errors.ErrInternalServer
+			}
+		}
+	}
+	
+	return
+}

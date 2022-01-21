@@ -2,9 +2,11 @@ package impl
 
 import (
 	"context"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go-forum-api/app/models"
 	"go-forum-api/app/repositories"
+	"time"
 )
 
 type ThreadRepository struct {
@@ -67,5 +69,68 @@ func (repo *ThreadRepository) VoteByID(id int, vote *models.Vote) (err error) {
 	query := "INSERT INTO votes (nickname, thread, value) VALUES ($1, $2, $3) " +
 		"ON CONFLICT (nickname, thread) DO UPDATE SET value = $3"
 	_, err = repo.db.Exec(context.Background(), query, vote.NickName, id, vote.Voice)
+	return
+}
+
+func (repo *ThreadRepository) CreatePosts(threadId int, forumSlug string, posts []*models.Post) (createdPosts []*models.Post, err error) {
+	query := "INSERT INTO posts(parent, author, forum, thread, message, created) " +
+		"VALUES ($1, $2, $3, $4, $5, $6) " +
+		"RETURNING id, COALESCE(parent, 0), author, forum, thread, created, isEdited, message"
+
+	ctx := context.Background()
+	tx, err := repo.db.Begin(ctx)
+	if err != nil {
+		return
+	}
+	defer func() {
+		if err != nil {
+			trErr := tx.Rollback(ctx)
+			if trErr != nil {
+				err = trErr
+			}
+		} else {
+			trErr := tx.Commit(ctx)
+			if trErr != nil {
+				err = trErr
+			}
+		}
+	}()
+
+	batch := new(pgx.Batch)
+	createdTime := time.Now()
+
+	for _, post := range posts {
+		if post.Parent == 0 {
+			batch.Queue(query, nil, post.Author, forumSlug, threadId, post.Message, createdTime)
+		} else {
+			batch.Queue(query, post.Parent, post.Author, forumSlug, threadId, post.Message, createdTime)
+		}
+	}
+
+	batchRes := tx.SendBatch(ctx, batch)
+	defer func() {
+		batchErr := batchRes.Close()
+		if batchErr != nil {
+			err = batchErr
+		}
+	}()
+
+	createdPosts = make([]*models.Post, 0)
+
+	for i := 0; i < batch.Len(); i++ {
+		createdPost := &models.Post{}
+
+		row := batchRes.QueryRow()
+		err = row.Scan(&createdPost.ID, &createdPost.Parent, &createdPost.Author, &createdPost.Forum,
+			&createdPost.Thread, &createdPost.Created, &createdPost.IsEdited, &createdPost.Message)
+
+		if err != nil {
+			createdPosts = nil
+			return
+		}
+
+		createdPosts = append(createdPosts, createdPost)
+	}
+
 	return
 }

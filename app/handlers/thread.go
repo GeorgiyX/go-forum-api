@@ -24,6 +24,7 @@ func CreateThreadHandler(url string,
 	urlGroup.GET("/:slug_or_id/details", handler.Get)
 	urlGroup.POST("/:slug_or_id/details", handler.Update)
 	urlGroup.POST("/:slug_or_id/vote", handler.Vote)
+	urlGroup.POST("/:slug_or_id/create", handler.CreatePosts)
 
 	return handler
 }
@@ -78,5 +79,26 @@ func (handler *ThreadHandler) Vote(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, forum)
+	return
+}
+
+func (handler *ThreadHandler) CreatePosts(c *gin.Context) {
+	slugOrId := c.Param("slug_or_id")
+
+	var posts models.Posts
+	err := easyjson.UnmarshalFromReader(c.Request.Body, &posts)
+
+	if err != nil {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest)
+		return
+	}
+
+	createdPosts, err := handler.ThreadUseCase.CreatePosts(slugOrId, posts)
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, createdPosts)
 	return
 }

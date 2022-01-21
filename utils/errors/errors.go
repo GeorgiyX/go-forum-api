@@ -38,7 +38,13 @@ var (
 )
 
 var (
+	ErrPostUserNotFound IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "автор поста не найден"}
+	ErrPostWrongParent  IAPIErrors = &models.Message{ErrCode: http.StatusConflict, Description: "не найден указанный родетель в данном треде"}
+)
+
+var (
 	SQL23505 = "23505" // duplicate key value violates unique constraint
 	SQL23503 = "23503" // violates foreign key constraint
 	SQL23502 = "23502" // null value violates not-null constraint
+	P0001    = "P0001" // err code rise exception
 )

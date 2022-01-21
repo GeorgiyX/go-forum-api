@@ -50,7 +50,7 @@ UNLOGGED TABLE votes
 CREATE
 UNLOGGED TABLE posts
 (
-    id       SERIAL UNIQUE PRIMARY KEY                                              NOT NULL,
+    id       BIGSERIAL UNIQUE PRIMARY KEY                                              NOT NULL,
     parent   INT                      DEFAULT NULL,
     author   CITEXT REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     forum    CITEXT REFERENCES forums (slug) ON UPDATE CASCADE ON DELETE CASCADE    NOT NULL,
@@ -99,3 +99,29 @@ CREATE TRIGGER recount_votes_update
     ON votes
     FOR EACH ROW
 EXECUTE PROCEDURE on_update_vote();
+
+--Триггер на path--
+CREATE OR REPLACE FUNCTION add_path_to_post() RETURNS TRIGGER AS $$
+DECLARE
+    parent_path BIGINT[];
+BEGIN
+    IF NEW.parent IS NULL THEN
+        NEW.path := NEW.path || NEW.id;
+    ELSE
+        SELECT path FROM posts WHERE id = NEW.parent AND thread = NEW.thread INTO parent_path;
+
+        IF (COALESCE(ARRAY_LENGTH(parent_path, 1), NULL) IS NULL) THEN
+            RAISE EXCEPTION 'add_path_to_post: parent not found';
+        END IF;
+
+        NEW.path := NEW.path || parent_path || NEW.id;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_path_to_post
+    BEFORE INSERT
+    ON posts
+    FOR EACH ROW
+EXECUTE PROCEDURE add_path_to_post();
