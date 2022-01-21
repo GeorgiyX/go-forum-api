@@ -64,10 +64,6 @@ func (usecase *ForumUseCase) Get(slug string) (forum *models.Forum, err error) {
 	return
 }
 
-func (usecase *ForumUseCase) GetUsers(slug string, params *models.ForumQueryParams) (users []*models.User, err error) {
-	return
-}
-
 func (usecase *ForumUseCase) CreateThread(thread *models.Thread) (createdThread *models.Thread, err error) {
 	createdThread, err = usecase.forumRepository.CreateThread(thread)
 
@@ -109,10 +105,27 @@ func (usecase *ForumUseCase) GetThreads(slug string, params *models.ForumQueryPa
 	if len(threads) == 0 {
 		_, err = usecase.Get(slug)
 		if err != nil {
-			fmt.Printf("error get threads: %v", err)
 			return
 		}
 		//TODO стоит добавть пустой слайс если nil не ок
+	}
+
+	return
+}
+
+func (usecase *ForumUseCase) GetUsers(slug string, params *models.ForumUserQueryParams) (users []*models.User, err error) {
+	users, err = usecase.forumRepository.GetUsers(slug, params)
+
+	if err != nil {
+		err = errors.ErrInternalServer
+		return
+	}
+
+	if len(users) == 0 {
+		if _, err = usecase.Get(slug); err != nil {
+			return
+		}
+		return
 	}
 
 	return

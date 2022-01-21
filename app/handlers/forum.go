@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mailru/easyjson"
 	"go-forum-api/app/models"
@@ -25,7 +24,7 @@ func CreateForumHandler(url string,
 	urlGroup := router.Group(url)
 	urlGroup.GET("/:slug/details", handler.Get)
 	urlGroup.POST("/create", handler.Create)
-	urlGroup.POST("/:slug/users", handler.GetUsers)
+	urlGroup.GET("/:slug/users", handler.GetUsers)
 	urlGroup.GET("/:slug/threads", handler.GetThreads)
 	urlGroup.POST("/:slug/create", handler.CreateThread)
 
@@ -77,21 +76,30 @@ func (handler *ForumHandler) Create(c *gin.Context) {
 }
 
 func (handler *ForumHandler) GetUsers(c *gin.Context) {
-	forum := &models.Forum{}
-	forum.Slug = c.Param("slug")
-	if v, _ := validator.GetInstance(); !v.ValidateSlug(forum.Slug) {
+	var slug string
+	slug = c.Param("slug")
+	if v, _ := validator.GetInstance(); !v.ValidateSlug(slug) {
 		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.SetDetails("Не корректный slug"))
 		return
 	}
 
-	params := &models.ForumQueryParams{}
-	err := c.Bind(params)
+	params := &models.ForumUserQueryParams{}
+	err := c.ShouldBindQuery(params)
 	if err != nil {
-		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest)
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.SetDetails("Не корректные query params"))
+	}
+
+	v, _ := validator.GetInstance()
+	v.ValidateForumUserQuery(params)
+
+	threads, err := handler.ForumUseCase.GetUsers(slug, params)
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
 		return
 	}
 
-	fmt.Printf("params: %v", params)
+	c.JSON(http.StatusOK, threads)
+	return
 }
 
 func (handler *ForumHandler) CreateThread(c *gin.Context) {

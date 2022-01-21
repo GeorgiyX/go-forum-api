@@ -1,19 +1,19 @@
 DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
 CREATE
-EXTENSION IF NOT EXISTS CITEXT;
+    EXTENSION IF NOT EXISTS CITEXT;
 
 CREATE
-UNLOGGED TABLE users
+    UNLOGGED TABLE users
 (
-    nickname CITEXT UNIQUE PRIMARY KEY NOT NULL,
-    email    CITEXT UNIQUE             NOT NULL,
-    fullname TEXT                      NOT NULL,
-    about    TEXT                      NOT NULL
+    nickname CITEXT COLLATE "C" UNIQUE PRIMARY KEY NOT NULL,
+    email    CITEXT UNIQUE                               NOT NULL,
+    fullname TEXT                                        NOT NULL,
+    about    TEXT                                        NOT NULL
 );
 
 CREATE
-UNLOGGED TABLE forums
+    UNLOGGED TABLE forums
 (
     id      SERIAL UNIQUE                                                          NOT NULL,
     slug    CITEXT UNIQUE PRIMARY KEY                                              NOT NULL,
@@ -24,7 +24,7 @@ UNLOGGED TABLE forums
 );
 
 CREATE
-UNLOGGED TABLE threads
+    UNLOGGED TABLE threads
 (
     id      SERIAL UNIQUE PRIMARY KEY                                              NOT NULL,
     slug    CITEXT UNIQUE,
@@ -37,7 +37,7 @@ UNLOGGED TABLE threads
 );
 
 CREATE
-UNLOGGED TABLE votes
+    UNLOGGED TABLE votes
 (
     nickname CITEXT REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     thread   INT REFERENCES threads (id) ON UPDATE CASCADE ON DELETE CASCADE        NOT NULL,
@@ -48,9 +48,9 @@ UNLOGGED TABLE votes
 );
 
 CREATE
-UNLOGGED TABLE posts
+    UNLOGGED TABLE posts
 (
-    id       BIGSERIAL UNIQUE PRIMARY KEY                                              NOT NULL,
+    id       BIGSERIAL UNIQUE PRIMARY KEY                                           NOT NULL,
     parent   INT                      DEFAULT NULL,
     author   CITEXT REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
     forum    CITEXT REFERENCES forums (slug) ON UPDATE CASCADE ON DELETE CASCADE    NOT NULL,
@@ -62,10 +62,10 @@ UNLOGGED TABLE posts
 );
 
 CREATE
-UNLOGGED TABLE IF NOT EXISTS forum_users
+    UNLOGGED TABLE IF NOT EXISTS forum_users
 (
-    forum    CITEXT REFERENCES forums (slug) ON UPDATE CASCADE ON DELETE CASCADE    NOT NULL,
-    nickname CITEXT REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    forum    CITEXT REFERENCES forums (slug) ON UPDATE CASCADE ON DELETE CASCADE                      NOT NULL,
+    nickname CITEXT COLLATE "C" REFERENCES users (nickname) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
 
     PRIMARY KEY (forum, nickname),
     UNIQUE (forum, nickname)
@@ -73,7 +73,8 @@ UNLOGGED TABLE IF NOT EXISTS forum_users
 
 --Триггеры на голосование--
 --1. Insert votes
-CREATE OR REPLACE FUNCTION on_insert_vote() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION on_insert_vote() RETURNS TRIGGER AS
+$$
 BEGIN
     UPDATE threads SET votes = votes + NEW.value WHERE id = NEW.thread;
     RETURN NULL;
@@ -87,7 +88,8 @@ CREATE TRIGGER recount_votes_insert
 EXECUTE PROCEDURE on_insert_vote();
 
 --2. Update votes
-CREATE OR REPLACE FUNCTION on_update_vote() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION on_update_vote() RETURNS TRIGGER AS
+$$
 BEGIN
     UPDATE threads SET votes = votes - OLD.value + NEW.value WHERE id = NEW.thread;
     RETURN NULL;
@@ -101,7 +103,8 @@ CREATE TRIGGER recount_votes_update
 EXECUTE PROCEDURE on_update_vote();
 
 --Триггер на path--
-CREATE OR REPLACE FUNCTION add_path_to_post() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION add_path_to_post() RETURNS TRIGGER AS
+$$
 DECLARE
     parent_path BIGINT[];
 BEGIN
@@ -125,3 +128,55 @@ CREATE TRIGGER add_path_to_post
     ON posts
     FOR EACH ROW
 EXECUTE PROCEDURE add_path_to_post();
+
+--Триггер на новых пользователей (посты и треды )--
+CREATE OR REPLACE FUNCTION add_forum_user() RETURNS TRIGGER AS
+$$
+BEGIN
+    INSERT INTO forum_users (forum, nickname) VALUES (NEW.forum, NEW.author) ON CONFLICT DO NOTHING;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_forum_user_threads
+    AFTER INSERT
+    ON threads
+    FOR EACH ROW
+EXECUTE PROCEDURE add_forum_user();
+
+CREATE TRIGGER add_forum_user_posts
+    AFTER INSERT
+    ON posts
+    FOR EACH ROW
+EXECUTE PROCEDURE add_forum_user();
+
+--Триггеры на счетчик постов и тредов--
+CREATE OR REPLACE FUNCTION inc_forum_threads() RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE forums SET threads = threads + 1 WHERE slug = NEW.forum;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER inc_forum_threads_trigger
+    AFTER INSERT
+    ON threads
+    FOR EACH ROW
+EXECUTE PROCEDURE inc_forum_threads();
+
+CREATE OR REPLACE FUNCTION inc_forum_posts() RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE forums SET posts = posts + 1 WHERE slug = NEW.forum;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER inc_forum_posts_trigger
+    BEFORE INSERT
+    ON posts
+    FOR EACH ROW
+EXECUTE PROCEDURE inc_forum_posts();
+
+

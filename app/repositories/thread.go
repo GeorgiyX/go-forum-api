@@ -12,6 +12,5 @@ type IThreadRepository interface {
 	VoteBySlug(slug string, vote *models.Vote) (err error)
 	VoteByID(threadId int, vote *models.Vote) (err error)
 	CreatePosts(threadId int, forumSlug string, post []*models.Post) (createdPosts []*models.Post, err error)
-	//GetPost(post *models.Post, threadId int /*todo sort param*/) (createdPost *models.Post, err error)
-
+	GetPosts(threadId int, params *models.PostsQueryParams) (posts []*models.Post, err error)
 }

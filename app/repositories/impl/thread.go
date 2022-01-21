@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go-forum-api/app/models"
 	"go-forum-api/app/repositories"
+	"go-forum-api/utils/constants"
 	"time"
 )
 
@@ -132,5 +133,45 @@ func (repo *ThreadRepository) CreatePosts(threadId int, forumSlug string, posts 
 		createdPosts = append(createdPosts, createdPost)
 	}
 
+	return
+}
+
+func (repo *ThreadRepository) GetPosts(threadId int, params *models.PostsQueryParams) (posts []*models.Post, err error) {
+	var rows pgx.Rows
+
+	if params.Since == 0 {
+		if params.Desc {
+			rows, err = repo.db.Query(context.Background(), constants.DescNoSincePostQuery[params.Sort],
+				threadId, params.Limit)
+		} else {
+			rows, err = repo.db.Query(context.Background(), constants.AscNoSincePostQuery[params.Sort],
+				threadId, params.Limit)
+		}
+	} else {
+		if params.Desc {
+			rows, err = repo.db.Query(context.Background(), constants.DescSincePostQuery[params.Sort],
+				threadId, params.Since, params.Limit)
+		} else {
+			rows, err = repo.db.Query(context.Background(), constants.AscSincePostQuery[params.Sort],
+				threadId, params.Since, params.Limit)
+		}
+	}
+
+	defer rows.Close()
+	if err != nil {
+		return
+	}
+
+	posts = make([]*models.Post, 0)
+	for rows.Next() {
+		post := &models.Post{}
+		err = rows.Scan(&post.ID, &post.Parent, &post.Author, &post.Forum,
+			&post.Thread, &post.Created, &post.IsEdited, &post.Message)
+		if err != nil {
+			posts = nil
+			return
+		}
+		posts = append(posts, post)
+	}
 	return
 }

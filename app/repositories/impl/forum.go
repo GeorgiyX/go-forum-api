@@ -38,10 +38,6 @@ func (repo *ForumRepository) Get(slug string) (forum *models.Forum, err error) {
 	return
 }
 
-func (repo *ForumRepository) GetUsers(slug string, params *models.ForumQueryParams) (users []*models.User, err error) {
-	return
-}
-
 func (repo *ForumRepository) CreateThread(thread *models.Thread) (createdThread *models.Thread, err error) {
 	query := "INSERT INTO threads (slug, author, forum, title, message, created) VALUES " +
 		"($1, (SELECT nickname FROM users WHERE nickname = $2), " +
@@ -65,7 +61,6 @@ func (repo *ForumRepository) CreateThread(thread *models.Thread) (createdThread 
 }
 
 func (repo *ForumRepository) GetThreads(slug string, params *models.ForumQueryParams) (threads []*models.Thread, err error) {
-	// TODO возвможно конкатенация ест перфоманс
 	query := "SELECT id, slug, author, forum, title, message, created, votes FROM threads WHERE forum = $1"
 	if !params.Since.Equal(time.Time{}) {
 		if params.Desc {
@@ -103,6 +98,49 @@ func (repo *ForumRepository) GetThreads(slug string, params *models.ForumQueryPa
 			return
 		}
 		threads = append(threads, thread)
+	}
+
+	return
+}
+
+func (repo *ForumRepository) GetUsers(slug string, params *models.ForumUserQueryParams) (users []*models.User, err error) {
+	query := "SELECT u.nickname, u.fullname, u.about, u.email " +
+		"FROM forum_users AS fu JOIN users AS u ON fu.nickname = u.nickname WHERE fu.forum = $1 "
+	if params.Since != "" {
+		if params.Desc {
+			query += "AND u.nickname < $2 ORDER BY u.nickname DESC LIMIT $3"
+		} else {
+			query += "AND u.nickname > $2 ORDER BY u.nickname LIMIT $3"
+		}
+	} else {
+		if params.Desc {
+			query += "ORDER BY u.nickname DESC LIMIT $2"
+		} else {
+			query += "ORDER BY u.nickname LIMIT $2"
+		}
+	}
+
+	var rows pgx.Rows
+	if params.Since != "" {
+		rows, err = repo.db.Query(context.Background(), query, slug, params.Since, params.Limit)
+	} else {
+		rows, err = repo.db.Query(context.Background(), query, slug, params.Limit)
+	}
+
+	defer rows.Close()
+	if err != nil {
+		return
+	}
+
+	users = make([]*models.User, 0)
+	for rows.Next() {
+		user := &models.User{}
+		err = rows.Scan(&user.NickName, &user.FullName, &user.About, &user.Email)
+		if err != nil {
+			users = nil
+			return
+		}
+		users = append(users, user)
 	}
 
 	return

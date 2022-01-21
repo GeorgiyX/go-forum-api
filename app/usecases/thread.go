@@ -9,4 +9,5 @@ type IThreadUseCase interface {
 	Update(slugOrId string, thread *models.Thread) (updatedThread *models.Thread, err error)
 	Vote(slugOrId string, vote *models.Vote) (thread *models.Thread, err error)
 	CreatePosts(slugOrId string, posts []*models.Post) (createdPosts []*models.Post, err error)
+	GetPosts(slugOrId string, params *models.PostsQueryParams) (posts []*models.Post, err error)
 }

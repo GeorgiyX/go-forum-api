@@ -141,6 +141,20 @@ func (usecase *ThreadUseCase) CreatePosts(slugOrId string, posts []*models.Post)
 			}
 		}
 	}
-	
+
+	return
+}
+
+func (usecase *ThreadUseCase) GetPosts(slugOrId string, params *models.PostsQueryParams) (posts []*models.Post, err error) {
+	thread, err := usecase.Get(slugOrId)
+	if err != nil {
+		return
+	}
+
+	posts, err = usecase.threadRepository.GetPosts(thread.ID, params)
+	if err != nil {
+		err = errors.ErrInternalServer
+	}
+
 	return
 }

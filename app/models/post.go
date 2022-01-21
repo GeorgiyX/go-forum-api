@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"go-forum-api/utils/constants"
+	"time"
+)
 
 type Post struct {
 	ID       int       `json:"id"`
@@ -15,3 +18,10 @@ type Post struct {
 
 //easyjson:json
 type Posts []*Post
+
+type PostsQueryParams struct {
+	Limit int                `form:"limit"`
+	Since int                `form:"since"`
+	Sort  constants.SortType `form:"sort"`
+	Desc  bool               `form:"desc"`
+}

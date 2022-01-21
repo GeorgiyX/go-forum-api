@@ -3,6 +3,7 @@ package validator
 import (
 	"fmt"
 	"go-forum-api/app/models"
+	"go-forum-api/utils/constants"
 	"regexp"
 	"strconv"
 	"sync"
@@ -49,6 +50,29 @@ func (validator *Validator) ValidateForumQuery(query *models.ForumQueryParams) {
 	if query.Limit == 0 {
 		query.Limit = 100
 	}
+}
+
+func (validator *Validator) ValidateForumUserQuery(query *models.ForumUserQueryParams) {
+	if query.Limit == 0 {
+		query.Limit = 100
+	}
+}
+
+func (validator *Validator) ValidatePostsQuery(query *models.PostsQueryParams) bool {
+	if query.Limit == 0 {
+		query.Limit = 100
+	}
+
+	if query.Sort == "" {
+		query.Sort = constants.SortFlat
+	}
+
+	if query.Sort != constants.SortParentTree &&
+		query.Sort != constants.SortFlat &&
+		query.Sort != constants.SortTree {
+		return false
+	}
+	return true
 }
 
 func (validator *Validator) GetSlugOrIdOrErr(slugOrId string) (slug string, id int, err error) {

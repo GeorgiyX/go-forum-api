@@ -6,6 +6,7 @@ import (
 	"go-forum-api/app/models"
 	"go-forum-api/app/usecases"
 	"go-forum-api/utils/errors"
+	"go-forum-api/utils/validator"
 	"net/http"
 )
 
@@ -25,6 +26,7 @@ func CreateThreadHandler(url string,
 	urlGroup.POST("/:slug_or_id/details", handler.Update)
 	urlGroup.POST("/:slug_or_id/vote", handler.Vote)
 	urlGroup.POST("/:slug_or_id/create", handler.CreatePosts)
+	urlGroup.GET("/:slug_or_id/posts", handler.GetPosts)
 
 	return handler
 }
@@ -100,5 +102,28 @@ func (handler *ThreadHandler) CreatePosts(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, createdPosts)
+	return
+}
+
+func (handler *ThreadHandler) GetPosts(c *gin.Context) {
+	slugOrId := c.Param("slug_or_id")
+
+	params := &models.PostsQueryParams{}
+	err := c.ShouldBindQuery(params)
+	if err != nil {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.SetDetails("Не корректные query params"))
+	}
+
+	if v, _ := validator.GetInstance(); !v.ValidatePostsQuery(params) {
+		c.AbortWithStatusJSON(errors.ErrBadRequest.Code(), errors.ErrBadRequest.SetDetails("Не корректные query params"))
+	}
+
+	createdPosts, err := handler.ThreadUseCase.GetPosts(slugOrId, params)
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
+		return
+	}
+
+	c.JSON(http.StatusOK, createdPosts)
 	return
 }

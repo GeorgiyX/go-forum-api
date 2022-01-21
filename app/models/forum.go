@@ -16,3 +16,9 @@ type ForumQueryParams struct {
 	Since time.Time `form:"since"`
 	Desc  bool      `form:"desc"`
 }
+
+type ForumUserQueryParams struct {
+	Limit int    `form:"limit"`
+	Since string `form:"since"`
+	Desc  bool   `form:"desc"`
+}
