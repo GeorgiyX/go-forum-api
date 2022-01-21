@@ -1,5 +1,11 @@
 package constants
 
+const (
+	PostUser   string = "user"
+	PostForum  string = "forum"
+	PostThread string = "thread"
+)
+
 type SortType string
 
 const (

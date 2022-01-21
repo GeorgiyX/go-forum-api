@@ -88,7 +88,8 @@ func (server *Server) Run() {
 	server.UseCases.Service = ucImpl.CreateServiceUseCase(server.Repositories.Service)
 
 	server.Repositories.Post = repoImpl.CreatePostRepository(db)
-	server.UseCases.Post = ucImpl.CreatePostUseCase(server.Repositories.Post)
+	server.UseCases.Post = ucImpl.CreatePostUseCase(server.Repositories.Post, server.UseCases.Forum,
+		server.UseCases.User, server.UseCases.Thread)
 
 	/* Server */
 	gin.SetMode(server.Settings.MODE)

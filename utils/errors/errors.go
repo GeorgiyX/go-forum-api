@@ -40,6 +40,7 @@ var (
 var (
 	ErrPostUserNotFound IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "автор поста не найден"}
 	ErrPostWrongParent  IAPIErrors = &models.Message{ErrCode: http.StatusConflict, Description: "не найден указанный родетель в данном треде"}
+	ErrPostNotFound     IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "не найден пост для обновления"}
 )
 
 var (

@@ -6,5 +6,5 @@ import (
 
 type IPostRepository interface {
 	Get(id int) (post *models.Post, err error)
-	Update(id int, post *models.Post) (updatedPost *models.Post, err error)
+	Update(post *models.Post) (updatedPost *models.Post, err error)
 }

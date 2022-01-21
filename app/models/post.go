@@ -25,3 +25,10 @@ type PostsQueryParams struct {
 	Sort  constants.SortType `form:"sort"`
 	Desc  bool               `form:"desc"`
 }
+
+type PostDetailed struct {
+	Post   *Post   `json:"post,omitempty"`
+	Author *User   `json:"author,omitempty"`
+	Thread *Thread `json:"thread,omitempty"`
+	Forum  *Forum  `json:"forum,omitempty"`
+}
