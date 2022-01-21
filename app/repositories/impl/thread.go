@@ -55,3 +55,17 @@ func (repo *ThreadRepository) UpdateByID(thread *models.Thread) (updatedThread *
 		&updatedThread.Title, &updatedThread.Message, &updatedThread.Created, &updatedThread.Votes)
 	return
 }
+
+func (repo *ThreadRepository) VoteBySlug(slug string, vote *models.Vote) (err error) {
+	query := "INSERT INTO votes (nickname, thread, value) VALUES ($1, (SELECT id FROM threads WHERE slug=$2), $3) " +
+		"ON CONFLICT (nickname, thread) DO UPDATE SET value = $3"
+	_, err = repo.db.Exec(context.Background(), query, vote.NickName, slug, vote.Voice)
+	return
+}
+
+func (repo *ThreadRepository) VoteByID(id int, vote *models.Vote) (err error) {
+	query := "INSERT INTO votes (nickname, thread, value) VALUES ($1, $2, $3) " +
+		"ON CONFLICT (nickname, thread) DO UPDATE SET value = $3"
+	_, err = repo.db.Exec(context.Background(), query, vote.NickName, id, vote.Voice)
+	return
+}

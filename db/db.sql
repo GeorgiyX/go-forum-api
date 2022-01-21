@@ -70,3 +70,32 @@ UNLOGGED TABLE IF NOT EXISTS forum_users
     PRIMARY KEY (forum, nickname),
     UNIQUE (forum, nickname)
 );
+
+--Триггеры на голосование--
+--1. Insert votes
+CREATE OR REPLACE FUNCTION on_insert_vote() RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE threads SET votes = votes + NEW.value WHERE id = NEW.thread;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER recount_votes_insert
+    AFTER INSERT
+    ON votes
+    FOR EACH ROW
+EXECUTE PROCEDURE on_insert_vote();
+
+--2. Update votes
+CREATE OR REPLACE FUNCTION on_update_vote() RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE threads SET votes = votes - OLD.value + NEW.value WHERE id = NEW.thread;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER recount_votes_update
+    AFTER UPDATE
+    ON votes
+    FOR EACH ROW
+EXECUTE PROCEDURE on_update_vote();

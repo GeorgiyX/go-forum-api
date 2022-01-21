@@ -71,3 +71,10 @@ func (validator *Validator) GetSlugOrIdOrErr(slugOrId string) (slug string, id i
 	slug = slugOrId
 	return
 }
+
+func (validator *Validator) ValidateVote(vote *models.Vote) bool {
+	if vote.Voice != 1 && vote.Voice != -1 {
+		return false
+	}
+	return true
+}

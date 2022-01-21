@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"go-forum-api/app/models"
 	"go-forum-api/app/repositories"
@@ -63,6 +64,52 @@ func (usecase *ThreadUseCase) Update(slugOrId string, thread *models.Thread) (up
 			err = errors.ErrThreadUpdateNotFound
 			return
 		}
+		err = errors.ErrInternalServer
+		return
+	}
+
+	return
+}
+
+func (usecase *ThreadUseCase) Vote(slugOrId string, vote *models.Vote) (thread *models.Thread, err error) {
+	v, _ := validator.GetInstance()
+	if !v.ValidateVote(vote) {
+		err = errors.ErrBadRequest.SetDetails("не верное значение голоса")
+		return
+	}
+
+	slug, id, err := v.GetSlugOrIdOrErr(slugOrId)
+	if err != nil {
+		err = errors.ErrBadRequest.SetDetails(err.Error())
+		return
+	}
+
+	if slug == "" {
+		err = usecase.threadRepository.VoteByID(id, vote)
+	} else {
+		err = usecase.threadRepository.VoteBySlug(slug, vote)
+	}
+
+	if err != nil {
+		pgconErr, ok := err.(*pgconn.PgError)
+		if ok {
+			if pgconErr.SQLState() == errors.SQL23503 {
+				err = errors.ErrThreadUserOrThreadNotFound
+				return
+			} else {
+				err = errors.ErrInternalServer
+				return
+			}
+		}
+	}
+
+	if slug == "" {
+		thread, err = usecase.threadRepository.GetByID(id)
+	} else {
+		thread, err = usecase.threadRepository.GetBySlug(slug)
+	}
+
+	if err != nil {
 		err = errors.ErrInternalServer
 		return
 	}

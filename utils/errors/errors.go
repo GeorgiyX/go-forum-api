@@ -30,10 +30,11 @@ var (
 )
 
 var (
-	ErrThreadAlreadyExists       IAPIErrors = &models.Message{ErrCode: http.StatusConflict, Description: "тред уже присутсвует в базе данных"}
-	ErrThreadUserOrForumNotFound IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "автор треда или форуи не найдены"}
-	ErrThreadNotFound            IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "тред не найден"}
-	ErrThreadUpdateNotFound      IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "не найден тред для обновления"}
+	ErrThreadAlreadyExists        IAPIErrors = &models.Message{ErrCode: http.StatusConflict, Description: "тред уже присутсвует в базе данных"}
+	ErrThreadUserOrForumNotFound  IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "автор треда или форуи не найдены"}
+	ErrThreadNotFound             IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "тред не найден"}
+	ErrThreadUpdateNotFound       IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "не найден тред для обновления"}
+	ErrThreadUserOrThreadNotFound IAPIErrors = &models.Message{ErrCode: http.StatusNotFound, Description: "не найден пользователь или тред для голосования"}
 )
 
 var (
