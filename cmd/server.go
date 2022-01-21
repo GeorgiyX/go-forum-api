@@ -14,21 +14,27 @@ import (
 )
 
 type Repositories struct {
-	User   repositories.IUserRepository
-	Forum  repositories.IForumRepository
-	Thread repositories.IThreadRepository
+	User    repositories.IUserRepository
+	Forum   repositories.IForumRepository
+	Thread  repositories.IThreadRepository
+	Service repositories.IServiceRepository
+	Post    repositories.IPostRepository
 }
 
 type UseCases struct {
-	User   usecases.IUserUseCase
-	Forum  usecases.IForumUseCase
-	Thread usecases.IThreadUseCase
+	User    usecases.IUserUseCase
+	Forum   usecases.IForumUseCase
+	Thread  usecases.IThreadUseCase
+	Service usecases.IServiceUseCase
+	Post    usecases.IPostUseCase
 }
 
 type Handlers struct {
-	User   *handlers.UserHandler
-	Forum  *handlers.ForumHandler
-	Thread *handlers.ThreadHandler
+	User    *handlers.UserHandler
+	Forum   *handlers.ForumHandler
+	Thread  *handlers.ThreadHandler
+	Service *handlers.ServiceHandler
+	Post    *handlers.PostHandler
 }
 
 type Server struct {
@@ -78,6 +84,12 @@ func (server *Server) Run() {
 	server.Repositories.Forum = repoImpl.CreateForumRepository(db)
 	server.UseCases.Forum = ucImpl.CreateForumUseCase(server.Repositories.Forum, server.Repositories.Thread)
 
+	server.Repositories.Service = repoImpl.CreateServiceRepository(db)
+	server.UseCases.Service = ucImpl.CreateServiceUseCase(server.Repositories.Service)
+
+	server.Repositories.Post = repoImpl.CreatePostRepository(db)
+	server.UseCases.Post = ucImpl.CreatePostUseCase(server.Repositories.Post)
+
 	/* Server */
 	gin.SetMode(server.Settings.MODE)
 	router := gin.New()
@@ -91,6 +103,8 @@ func (server *Server) Run() {
 	server.Handlers.User = handlers.CreateUserHandler(server.Settings.Urls.User, server.UseCases.User, apiGroup)
 	server.Handlers.Forum = handlers.CreateForumHandler(server.Settings.Urls.Forum, server.UseCases.Forum, apiGroup)
 	server.Handlers.Thread = handlers.CreateThreadHandler(server.Settings.Urls.Thread, server.UseCases.Thread, apiGroup)
+	server.Handlers.Service = handlers.CreateServiceHandler(server.Settings.Urls.Service, server.UseCases.Service, apiGroup)
+	server.Handlers.Post = handlers.CreatePostHandler(server.Settings.Urls.Post, server.UseCases.Post, apiGroup)
 
 	err = router.Run(server.Settings.APIAddr)
 	if err != nil {

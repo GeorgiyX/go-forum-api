@@ -1,0 +1,10 @@
+package usecases
+
+import (
+	"go-forum-api/app/models"
+)
+
+type IPostUseCase interface {
+	Get(id int) (post *models.Post, err error)
+	Update(id int, post *models.Post) (updatedPost *models.Post, err error)
+}

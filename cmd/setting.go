@@ -6,11 +6,12 @@ import (
 )
 
 type Urls struct {
-	Root   string
-	User   string
-	Forum  string
-	Thread string
-	Post   string
+	Root    string
+	User    string
+	Forum   string
+	Thread  string
+	Service string
+	Post    string
 }
 
 type Settings struct {
@@ -28,10 +29,12 @@ type Settings struct {
 
 func GetUrls() Urls {
 	return Urls{
-		Root:   "/api",
-		User:   "/user",
-		Forum:  "/forum",
-		Thread: "/thread",
+		Root:    "/api",
+		User:    "/user",
+		Forum:   "/forum",
+		Thread:  "/thread",
+		Service: "/service",
+		Post:    "/post",
 	}
 }
 
