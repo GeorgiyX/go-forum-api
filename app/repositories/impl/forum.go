@@ -39,7 +39,7 @@ func (repo *ForumRepository) Get(slug string) (forum *models.Forum, err error) {
 }
 
 func (repo *ForumRepository) CreateThread(thread *models.Thread) (createdThread *models.Thread, err error) {
-	query := "INSERT INTO threads (COALESCE(slug, ''), author, forum, title, message, created) VALUES " +
+	query := "INSERT INTO threads (slug, author, forum, title, message, created) VALUES " +
 		"($1, (SELECT nickname FROM users WHERE nickname = $2), " +
 		"(SELECT slug FROM forums WHERE slug = $3), $4, $5, $6) " +
 		"RETURNING id, COALESCE(slug, ''), author, forum, title, message, created, votes"

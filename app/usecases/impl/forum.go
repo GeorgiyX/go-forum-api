@@ -105,7 +105,6 @@ func (usecase *ForumUseCase) GetThreads(slug string, params *models.ForumQueryPa
 		if err != nil {
 			return
 		}
-		//TODO стоит добавть пустой слайс если nil не ок
 	}
 
 	return
