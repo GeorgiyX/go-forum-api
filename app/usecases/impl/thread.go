@@ -93,7 +93,7 @@ func (usecase *ThreadUseCase) Vote(slugOrId string, vote *models.Vote) (thread *
 	if err != nil {
 		pgconErr, ok := err.(*pgconn.PgError)
 		if ok {
-			if pgconErr.SQLState() == errors.SQL23503 {
+			if pgconErr.SQLState() == errors.SQL23503 || pgconErr.SQLState() == errors.SQL23502 {
 				err = errors.ErrThreadUserOrThreadNotFound
 				return
 			} else {

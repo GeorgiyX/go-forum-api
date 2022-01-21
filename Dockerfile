@@ -45,7 +45,7 @@ WORKDIR /app
 COPY --from=build /app/$ARTIFACT $ARTIFACT
 COPY ./db/db.sql db.sql
 
-ENV MODE debug
+ENV MODE release
 #TODO: docker-compose
 CMD service postgresql start && \
     psql -h localhost -p $PGPORT -d $PGDB_NAME -U $PGFORUM_USER -w -q -f db.sql \

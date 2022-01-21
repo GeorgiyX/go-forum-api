@@ -3,6 +3,8 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"go-forum-api/app/usecases"
+	"go-forum-api/utils/errors"
+	"net/http"
 )
 
 type ServiceHandler struct {
@@ -24,9 +26,21 @@ func CreateServiceHandler(url string,
 }
 
 func (handler *ServiceHandler) Clear(c *gin.Context) {
-	return
+	err := handler.serviceUseCase.Clear()
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 func (handler *ServiceHandler) Status(c *gin.Context) {
-	return
+	status, err := handler.serviceUseCase.Status()
+	if err != nil {
+		c.AbortWithStatusJSON(err.(errors.IAPIErrors).Code(), err)
+		return
+	}
+
+	c.JSON(http.StatusOK, status)
 }

@@ -7,6 +7,7 @@ import (
 	"go-forum-api/app/usecases"
 	"go-forum-api/utils/constants"
 	"go-forum-api/utils/errors"
+	"strconv"
 )
 
 type PostUseCase struct {
@@ -49,7 +50,7 @@ func (usecase *PostUseCase) Get(id int, details []string) (postDetailed *models.
 				return
 			}
 		case constants.PostThread:
-			postDetailed.Thread, err = usecase.threadUseCase.Get(string(rune(postDetailed.Post.Thread)))
+			postDetailed.Thread, err = usecase.threadUseCase.Get(strconv.Itoa(postDetailed.Post.Thread))
 			if err != nil {
 				postDetailed = nil
 				return
