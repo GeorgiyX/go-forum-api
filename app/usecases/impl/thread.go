@@ -97,7 +97,7 @@ func (usecase *ThreadUseCase) Vote(slugOrId string, vote *models.Vote) (thread *
 				err = errors.ErrThreadUserOrThreadNotFound
 				return
 			} else {
-				err = errors.ErrInternalServer
+				err = errors.ErrInternalServer.SetDetails(err.Error())
 				return
 			}
 		}
