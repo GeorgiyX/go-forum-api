@@ -1,7 +1,6 @@
 package impl
 
 import (
-	"fmt"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"go-forum-api/app/models"
@@ -97,7 +96,6 @@ func (usecase *ForumUseCase) CreateThread(thread *models.Thread) (createdThread 
 func (usecase *ForumUseCase) GetThreads(slug string, params *models.ForumQueryParams) (threads []*models.Thread, err error) {
 	threads, err = usecase.forumRepository.GetThreads(slug, params)
 	if err != nil {
-		fmt.Printf("error get threads: %v", err)
 		err = errors.ErrInternalServer
 		return
 	}
