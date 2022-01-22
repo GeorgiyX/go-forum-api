@@ -123,6 +123,11 @@ func (usecase *ThreadUseCase) CreatePosts(slugOrId string, posts []*models.Post)
 		return
 	}
 
+	if len(posts) == 0 {
+		createdPosts = make([]*models.Post, 0)
+		return
+	}
+
 	createdPosts, err = usecase.threadRepository.CreatePosts(thread.ID, thread.Forum, posts)
 	if err != nil {
 		pgconErr, ok := err.(*pgconn.PgError)

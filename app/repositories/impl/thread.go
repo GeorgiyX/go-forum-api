@@ -2,11 +2,13 @@ package impl
 
 import (
 	"context"
+	"fmt"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go-forum-api/app/models"
 	"go-forum-api/app/repositories"
 	"go-forum-api/utils/constants"
+	"strings"
 	"time"
 )
 
@@ -73,7 +75,7 @@ func (repo *ThreadRepository) VoteByID(id int, vote *models.Vote) (err error) {
 	return
 }
 
-func (repo *ThreadRepository) CreatePosts(threadId int, forumSlug string, posts []*models.Post) (createdPosts []*models.Post, err error) {
+func (repo *ThreadRepository) CreatePostsBatch(threadId int, forumSlug string, posts []*models.Post) (createdPosts []*models.Post, err error) {
 	query := "INSERT INTO posts(parent, author, forum, thread, message, created) " +
 		"VALUES ($1, $2, $3, $4, $5, $6) " +
 		"RETURNING id, COALESCE(parent, 0), author, forum, thread, created, isEdited, message"
@@ -131,6 +133,49 @@ func (repo *ThreadRepository) CreatePosts(threadId int, forumSlug string, posts 
 		}
 
 		createdPosts = append(createdPosts, createdPost)
+	}
+
+	return
+}
+
+func (repo *ThreadRepository) CreatePosts(threadId int, forumSlug string, posts []*models.Post) (createdPosts []*models.Post, err error) {
+	query := "INSERT INTO posts(parent, author, forum, thread, message, created) VALUES "
+
+	createdTime := time.Now()
+	var values []interface{}
+	for i, _ := range posts {
+		indexShift := i * 6
+		query += fmt.Sprintf("(NULLIF($%v, 0), $%v, $%v, $%v, $%v, $%v),", indexShift+1, indexShift+2,
+			indexShift+3, indexShift+4, indexShift+5, indexShift+6)
+		values = append(values, posts[i].Parent, posts[i].Author, forumSlug, threadId, posts[i].Message, createdTime)
+	}
+	query = strings.TrimSuffix(query, ",")
+	query += " RETURNING id, COALESCE(parent, 0), author, forum, thread, created, isEdited, message"
+
+	rows, err := repo.db.Query(context.Background(), query, values...)
+	defer rows.Close()
+
+	if err != nil {
+		return
+	}
+
+	createdPosts = make([]*models.Post, 0)
+	for rows.Next() {
+		createdPost := &models.Post{}
+		err = rows.Scan(&createdPost.ID, &createdPost.Parent, &createdPost.Author, &createdPost.Forum,
+			&createdPost.Thread, &createdPost.Created, &createdPost.IsEdited, &createdPost.Message)
+
+		if err != nil {
+			createdPosts = nil
+			return
+		}
+
+		createdPosts = append(createdPosts, createdPost)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return
 	}
 
 	return

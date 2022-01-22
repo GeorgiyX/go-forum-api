@@ -181,20 +181,12 @@ EXECUTE PROCEDURE inc_forum_posts();
 
 --Indexes--
 
-CREATE INDEX IF NOT EXISTS posts_thread_id_path1_id_idx ON posts (thread, (path[1]), id);
-
-CREATE INDEX IF NOT EXISTS posts_thread_id_path_idx ON posts (thread, path);
-
-CREATE INDEX IF NOT EXISTS posts_thread_id_id_idx ON posts (thread, id);
-
-CREATE INDEX IF NOT EXISTS posts_thread_id_parent_path_idx ON posts (thread, parent, path);
-
-CREATE INDEX IF NOT EXISTS posts_parent_id_idx ON posts (parent, id);
-
-CREATE INDEX IF NOT EXISTS posts_id_created_thread_id_idx ON posts (id, created, thread);
-
-CREATE INDEX IF NOT EXISTS posts_id_path_idx ON posts (id, path);
-
-CREATE INDEX IF NOT EXISTS threads_forum_slug_created_idx ON threads (forum, created);
-
-CREATE INDEX IF NOT EXISTS users_idx ON users (nickname, email) INCLUDE (about, fullname);
+CREATE INDEX IF NOT EXISTS posts_thread_id_path1_id_idx ON posts USING btree (thread, (path[1]), id);
+CREATE INDEX IF NOT EXISTS posts_thread_id_path_idx ON posts USING btree (thread, path);
+CREATE INDEX IF NOT EXISTS posts_thread_id_id_idx ON posts USING btree (thread, id);
+CREATE INDEX IF NOT EXISTS posts_thread_id_parent_path_idx ON posts USING btree (thread, parent, path);
+CREATE INDEX IF NOT EXISTS posts_parent_id_idx ON posts USING btree (parent, id);
+CREATE INDEX IF NOT EXISTS posts_id_created_thread_id_idx ON posts USING btree (id, created, thread);
+CREATE INDEX IF NOT EXISTS posts_id_path_idx ON posts USING btree (id, path);
+CREATE INDEX IF NOT EXISTS threads_forum_slug_created_idx ON threads USING btree (forum, created);
+CREATE INDEX IF NOT EXISTS users_idx ON users USING btree (nickname, email) INCLUDE (about, fullname);

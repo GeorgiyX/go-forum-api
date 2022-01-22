@@ -63,6 +63,9 @@ func (server *Server) Run() {
 	/* DataBase */
 	//TODO: подкрутить конфиг
 	config, err := pgxpool.ParseConfig(server.Settings.DSN)
+	config.MaxConns = 1000
+	//config.ConnConfig.RuntimeParams["random_page_cost"] = "1"
+	//config.ConnConfig.RuntimeParams["seq_page_cost"] = "1"
 	if err != nil {
 		fmt.Printf("Can't parese DSN: %v\n", err)
 		return
