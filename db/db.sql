@@ -180,13 +180,9 @@ CREATE TRIGGER inc_forum_posts_trigger
 EXECUTE PROCEDURE inc_forum_posts();
 
 --Indexes--
-
-CREATE INDEX IF NOT EXISTS posts_thread_id_path1_id_idx ON posts (thread, (path[1]), id);
-CREATE INDEX IF NOT EXISTS posts_thread_id_path_idx ON posts (thread, path);
-CREATE INDEX IF NOT EXISTS posts_thread_id_id_idx ON posts (thread, id);
-CREATE INDEX IF NOT EXISTS posts_thread_id_parent_path_idx ON posts (thread, parent, path);
-CREATE INDEX IF NOT EXISTS posts_parent_id_idx ON posts (parent, id);
-CREATE INDEX IF NOT EXISTS posts_id_created_thread_id_idx ON posts (id, created, thread);
-CREATE INDEX IF NOT EXISTS posts_id_path_idx ON posts (id, path);
-CREATE INDEX IF NOT EXISTS threads_forum_slug_created_idx ON threads (forum, created);
+CREATE INDEX IF NOT EXISTS forum_users_fk_idx ON forum_users(nickname);
+CREATE INDEX IF NOT EXISTS threads_forum_created_idx ON threads (forum, created);
+CREATE INDEX IF NOT EXISTS posts_thread_id ON posts (thread, id); -- Sort flat
+CREATE INDEX IF NOT EXISTS posts_thread_id_path_idx ON posts (thread, path); -- Sort tree
+CREATE INDEX IF NOT EXISTS posts_thread_id_path_idx ON posts (thread, (path[1]), parent); -- Sort parent tree
 CREATE INDEX IF NOT EXISTS users_idx ON users (nickname, email) INCLUDE (about, fullname);

@@ -19,7 +19,7 @@ var (
 		SortFlat: "SELECT id, COALESCE(parent, 0), author, forum, thread, created, isEdited, message " +
 			"FROM posts WHERE thread = $1 AND id < $2 ORDER BY id DESC LIMIT $3",
 		SortTree: "SELECT id, COALESCE(parent, 0), author, forum, thread, created, isEdited, message " +
-			"FROM posts WHERE thread = $1 AND path < (SELECT path FROM posts WHERE id = $2)\nORDER BY path DESC LIMIT $3",
+			"FROM posts WHERE thread = $1 AND path < (SELECT path FROM posts WHERE id = $2) ORDER BY path DESC LIMIT $3",
 		SortParentTree: `
 WITH roots AS (
     SELECT DISTINCT path[1]
@@ -56,7 +56,7 @@ FROM posts WHERE thread = $1 AND path[1] IN (SELECT * FROM roots) ORDER BY path`
 		SortFlat: "SELECT id, COALESCE(parent, 0), author, forum, thread, created, isEdited, message " +
 			"FROM posts WHERE thread = $1 ORDER BY id DESC LIMIT $2",
 		SortTree: "SELECT id, COALESCE(parent, 0), author, forum, thread, created, isEdited, message " +
-			"FROM posts WHERE thread = $1 ORDER BY path DESC LIMIT $2\n",
+			"FROM posts WHERE thread = $1 ORDER BY path DESC LIMIT $2",
 		SortParentTree: `
 WITH roots AS (
     SELECT DISTINCT path[1]
