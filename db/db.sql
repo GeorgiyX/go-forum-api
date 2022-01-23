@@ -182,7 +182,8 @@ EXECUTE PROCEDURE inc_forum_posts();
 --Indexes--
 CREATE INDEX IF NOT EXISTS forum_users_fk_idx ON forum_users(nickname);
 CREATE INDEX IF NOT EXISTS threads_forum_created_idx ON threads (forum, created);
-CREATE INDEX IF NOT EXISTS posts_thread_id ON posts (thread, id); -- Sort flat
-CREATE INDEX IF NOT EXISTS posts_thread_id_path_idx ON posts (thread, path); -- Sort tree
-CREATE INDEX IF NOT EXISTS posts_thread_id_path_idx ON posts (thread, (path[1]), parent); -- Sort parent tree
 CREATE INDEX IF NOT EXISTS users_idx ON users (nickname, email) INCLUDE (about, fullname);
+CREATE INDEX IF NOT EXISTS posts_thread_id ON posts (thread, id); -- Sort flat
+CREATE INDEX IF NOT EXISTS posts_thread_path_idx ON posts (thread, path); -- Sort tree
+CREATE INDEX IF NOT EXISTS posts__thread_path_1_idx ON posts (thread, (path[1])); -- Sort parent tree
+
